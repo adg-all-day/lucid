@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "lucid",
+    "slug": "lucid",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#5B5FC7",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.anonymous.lucid"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Satoshi-Light.otf",
+            "./assets/fonts/Satoshi-Regular.otf",
+            "./assets/fonts/Satoshi-Medium.otf",
+            "./assets/fonts/Satoshi-Bold.otf",
+            "./assets/fonts/Satoshi-Black.otf",
+            "./assets/fonts/LexendDeca-Regular.ttf"
+          ]
+        }
+      ],
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}

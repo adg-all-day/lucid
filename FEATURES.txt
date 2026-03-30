@@ -1,0 +1,178 @@
+LUCID - Escrow Transaction Management App
+==========================================
+Feature Log - All Implementations To Date
+==========================================
+
+PROJECT OVERVIEW
+----------------
+Lucid is a React Native (Expo SDK 55) escrow/transaction management app
+connected to a Go backend at wizerconsulting.com:9091/api/v1.
+Built with custom Satoshi font, 33 custom SVG components, and 5 screens.
+
+
+SCREENS
+-------
+
+1. HOME SCREEN
+   - User greeting header with avatar and Lucid logo
+   - 4 horizontal scrollable stat cards (All, Action Required, Open, Closed)
+   - Transaction list with search and tab filtering (All, Staging, Signed, Disbursed, Closed)
+   - Transaction cards showing type, description, amount, role, counterparties, closing date countdown
+   - Color-coded status badges
+   - Activity log section with expandable device/browser/IP details
+   - Pull-to-refresh with live API data fetching
+
+2. TRANSACTION DETAIL SCREEN
+   - Breadcrumb navigation with transaction type
+   - Transaction ID display with Actions menu
+   - Amount display with eye toggle to show/hide
+   - User's role display (case-insensitive email matching)
+   - 5-step chevron stepper (Agreement > Escrow > Delivery > Acceptance > Disbursement)
+   - Counterparty list with roles, emails, action statuses, nudge buttons
+   - Transaction documents section with download buttons
+   - Payment section with escrow transfer flow
+   - Acknowledgement & acceptance section with signature workflow
+   - Shadow-free payment and acknowledgement cards
+
+3. NEW TRANSACTION SCREEN (Modal Popup)
+   - Presented as a transparent modal overlay with dimmed background
+   - Home screen visible behind (top gap + side margins)
+   - Rounded top corners, slide-from-bottom animation
+   - Red circle-X close button (custom SVG)
+   - Tap dimmed area to dismiss
+   - Scroll-friendly (no Pressable wrapping ScrollView)
+
+   Form fields with Material Design outlined labels (OutlinedField component):
+   - Transaction Type (11 types)
+   - Description
+   - Transaction Value with currency selector (55+ currencies with country codes e.g. "US $")
+   - Closing Date picker
+   - Counterparties section (draggable, collapsible):
+     - Email with purple search icon (flush inside input border)
+     - Telephone with country code selector (30+ countries)
+     - Role selector (Buyer, Seller, Peer)
+     - First/Middle/Last name
+     - Notification preferences (Email, Text) with square checkboxes
+     - Signature required toggle with upload
+     - Security section (access code, photo ID toggle, private message)
+     - Permissions grid (6 checkboxes)
+   - Transaction Documents section (draggable, collapsible)
+   - Settlements section (draggable, collapsible):
+     - Description, Value, Fixed Amount/Percentage pill toggle
+     - Due From / Due To dropdowns (sends counterparty emails to backend)
+   - Email Message section (subject + message)
+   - Save as Draft / Submit buttons
+
+4. HELP SCREEN (placeholder)
+5. SETTINGS SCREEN (placeholder)
+6. CONTACT US SCREEN (placeholder)
+
+
+NAVIGATION
+----------
+- React Navigation v7 (native stack + bottom tabs)
+- Bottom tab bar with custom icons, active underline indicator, font weight changes
+- Home tab contains nested stack (HomeScreen > TransactionDetailScreen)
+- NewTransaction presented as transparentModal with slide_from_bottom animation
+- Hardware back button dismisses modal
+
+
+UI/UX FEATURES
+--------------
+
+Counterparty Cards:
+- Grey (#F5F5F5) background, 5px border radius
+- Drag handle (6-dot pattern) flush to left edge
+- Collapsible with name/description shown when collapsed (ellipsis truncation)
+- Collapsed cards are ~30% smaller height
+- First counterparty is fixed (not draggable), others are draggable
+- Filter, trash, and collapse icons in non-shrinkable container
+
+Document & Settlement Cards:
+- Same grey background, drag handle, collapse behavior as counterparties
+- All items draggable (no fixed first item)
+- Description shown when collapsed
+- Settlement number displayed left of description field
+
+Input Fields:
+- Material Design outlined text field labels (OutlinedField component)
+- Labels float on input border with white background
+- Combined input fields (phone code + number, currency + value) in single bordered rectangles
+- Currency badges show country codes (e.g. "US $", "CA $", "NG N")
+
+Buttons:
+- Boxed style with grey borders (1px, Colors.border)
+- Add Counterparty / Add Document: self-sizing, left-aligned
+- Add Settlement / View Settlement Statement: side by side, proper sizing
+- Save as Draft (filled purple) / Submit (grey border): flex layout
+- Pill toggle for Fixed Amount / Percentage
+
+Typography:
+- Section headings (Counterparties, Documents, Settlements, Email Message): 14px
+- Email Message heading: 14px, bold (700)
+- All border radius standardized to 5px
+
+
+API INTEGRATION
+---------------
+
+Transaction Creation (POST /transactions):
+- Multipart/form-data format
+- Go gin binding dot notation: counterparties[0].email (not counterparties[0][email])
+- All counterparty fields sent per API spec (email, name, role, phone, permissions, etc.)
+- Permissions sent as counterparties[i].permissions[pi].permission / .value
+- Settlements use amount_type field (fixed/percentage)
+- Due From / Due To send counterparty email addresses
+- Closing date in RFC3339 format (no .000Z, just Z)
+- Additional fields: base_currency, is_currency_exchange, exchange_rate, platform_markup
+
+Transaction Listing (GET /transactions):
+- Fetches paginated list with status filtering
+- Maps backend stages to UI tabs
+
+Transaction Detail (GET /transactions/{id}):
+- Case-insensitive email matching for viewer's role
+- Renders counterparties, settlements, documents from response
+
+
+CUSTOM COMPONENTS (33)
+----------------------
+
+Reusable:
+- StyledText: Satoshi font wrapper with automatic weight mapping
+- PickerModal: Searchable bottom sheet selector
+- StepperChevron: 5-step progress indicator with chevron shapes
+- OutlinedField: Material Design floating label wrapper
+- DraggableCounterpartyList: Reorderable list with gesture handling
+- LucidLogo: SVG logo component
+- CloseIcon: Red circle-X close button
+
+Navigation Icons: NavHomeIcon, NavHelpIcon, NavHeadsetIcon, NavSettingsIcon
+Status Icons: ActionRequiredIcon, AwaitingDeliveryIcon, ExclamationIcon, NudgeIcon
+Step Icons: StepAgreementIcon, StepEscrowIcon, StepDeliveryIcon, StepAcceptanceIcon, StepDisbursementIcon
+Feature Icons: TransferIcon, UserTimeIcon, UnlockIcon, LockIcon
+UI Icons: EyeOpenIcon, EyeCrossedIcon, VerticalDotsIcon, AvatarIcon, OrderIdIcon, PhotoIdIcon
+Counterparty Icons: CounterpartyFilterIcon, CounterpartyTrashIcon, CounterpartyCollapseIcon
+
+
+APP ICON
+--------
+- Custom Lucid logo on purple (#5B5FC7) background
+- Android adaptive icon with foreground, background, and monochrome layers
+- Generated from SVG using sharp-cli
+
+
+ENVIRONMENT
+-----------
+- React Native 0.83.4 + Expo SDK 55
+- WSL2 development with Windows Android emulator bridge
+- Custom adb wrapper at /home/adg/Android/Sdk/platform-tools/adb
+- Emulator: Medium_Phone_API_36.1
+- Package: com.anonymous.lucid
+
+
+KNOWN ISSUES / TODO
+-------------------
+- Document file upload field format not yet resolved with backend
+- Home screen user name is hardcoded (mockData), not from API profile
+- Help, Settings, Contact Us screens are placeholders
