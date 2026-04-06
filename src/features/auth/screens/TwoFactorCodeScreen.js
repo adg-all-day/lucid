@@ -1,0 +1,115 @@
+import React from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import AuthShell from '../components/AuthShell';
+import AuthField from '../components/AuthField';
+import AuthPrimaryButton from '../components/AuthPrimaryButton';
+import Text from '../../../components/StyledText';
+import Colors from '../../../constants/colors';
+import MailIcon from '../../../icons/MailIcon';
+import { twoFactorCodeSchema } from '../schemas/auth.schema';
+import { useVerify2FA } from '../../../api/queries/auth';
+import useAuthStore from '../../../stores/authStore';
+
+export default function TwoFactorCodeScreen() {
+  const router = useRouter();
+  const sessionId = useAuthStore((state) => state.sessionId);
+  const verify2FAMutation = useVerify2FA();
+  const { control, handleSubmit } = useForm({
+    resolver: zodResolver(twoFactorCodeSchema),
+    defaultValues: {
+      code: '',
+    },
+  });
+
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      await verify2FAMutation.mutateAsync({ session_id: sessionId, code: data.code });
+      router.replace('/(tabs)');
+    } catch {
+      // error available via verify2FAMutation.error
+    }
+  });
+
+  return (
+    <AuthShell title="Two-Factor Authentication">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.flex}
+      >
+        <View style={styles.form}>
+          <Text style={styles.heading}>
+            Enter the code from your preferred authentication method
+          </Text>
+
+          <AuthField
+            control={control}
+            name="code"
+            label="Enter Code"
+            autoCapitalize="characters"
+            autoFocus
+            highlighted
+            trailing={<MailIcon size={16} color={Colors.grayMedium} />}
+          />
+
+          {verify2FAMutation.error ? (
+            <Text style={styles.errorText}>
+              {verify2FAMutation.error?.response?.data?.message || 'Verification failed. Please try again.'}
+            </Text>
+          ) : null}
+
+          <AuthPrimaryButton title="Login" onPress={onSubmit} loading={verify2FAMutation.isPending} style={styles.button} />
+
+          <View style={styles.recoveryRow}>
+            <Text style={styles.recoveryText}>Can&apos;t access your verification methods? </Text>
+            <Pressable onPress={() => router.push('/recovery-code')}>
+              <Text style={styles.recoveryLink}>Use Recovery Code</Text>
+            </Pressable>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </AuthShell>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: {
+    width: '100%',
+  },
+  form: {
+    paddingBottom: 2,
+  },
+  heading: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#3A3A3A',
+    fontWeight: '500',
+    marginBottom: 18,
+  },
+  errorText: {
+    color: Colors.error,
+    fontSize: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  button: {
+    marginTop: 2,
+  },
+  recoveryRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 14,
+  },
+  recoveryText: {
+    fontSize: 12.5,
+    color: '#2E2E2E',
+    fontWeight: '500',
+  },
+  recoveryLink: {
+    fontSize: 12.5,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+});

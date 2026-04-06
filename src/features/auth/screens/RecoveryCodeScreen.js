@@ -1,0 +1,92 @@
+import React from 'react';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import AuthShell from '../components/AuthShell';
+import AuthField from '../components/AuthField';
+import AuthPrimaryButton from '../components/AuthPrimaryButton';
+import Text from '../../../components/StyledText';
+import Colors from '../../../constants/colors';
+import { recoveryCodeSchema } from '../schemas/auth.schema';
+import { useVerify2FA } from '../../../api/queries/auth';
+import useAuthStore from '../../../stores/authStore';
+
+export default function RecoveryCodeScreen() {
+  const router = useRouter();
+  const sessionId = useAuthStore((state) => state.sessionId);
+  const recoveryMutation = useVerify2FA();
+  const { control, handleSubmit } = useForm({
+    resolver: zodResolver(recoveryCodeSchema),
+    defaultValues: {
+      code: '',
+    },
+  });
+
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      await recoveryMutation.mutateAsync({ session_id: sessionId, code: data.code });
+      router.replace('/(tabs)');
+    } catch {
+      // error available via recoveryMutation.error
+    }
+  });
+
+  return (
+    <AuthShell title="Recovery Code">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.flex}
+      >
+        <View style={styles.form}>
+          <Text style={styles.heading}>
+            Paste the recovery code saved on your device
+          </Text>
+
+          <AuthField
+            control={control}
+            name="code"
+            label="Recovery Code"
+            placeholder="XXXX-XXXX-XXXX-XXXX-XXXX"
+            autoCapitalize="characters"
+            autoFocus
+            highlighted
+          />
+
+          {recoveryMutation.error ? (
+            <Text style={styles.errorText}>
+              {recoveryMutation.error?.response?.data?.message || 'Recovery failed. Please try again.'}
+            </Text>
+          ) : null}
+
+          <AuthPrimaryButton title="Login" onPress={onSubmit} loading={recoveryMutation.isPending} style={styles.button} />
+        </View>
+      </KeyboardAvoidingView>
+    </AuthShell>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: {
+    width: '100%',
+  },
+  form: {
+    paddingBottom: 2,
+  },
+  heading: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#3A3A3A',
+    fontWeight: '500',
+    marginBottom: 18,
+  },
+  errorText: {
+    color: Colors.error,
+    fontSize: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  button: {
+    marginTop: 2,
+  },
+});

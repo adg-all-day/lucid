@@ -2,9 +2,10 @@
   "expo": {
     "name": "lucid",
     "slug": "lucid",
+    "scheme": "lucid",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./src/icons/app-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -12,16 +13,18 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.lucid"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#5B5FC7",
-        "foregroundImage": "./assets/android-icon-foreground.png",
+        "foregroundImage": "./src/icons/adaptive-icon.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.anonymous.lucid"
+      "package": "com.anonymous.lucid",
+      "usesCleartextTraffic": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -40,7 +43,9 @@
           ]
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-router",
+      "expo-secure-store"
     ]
   }
 }
