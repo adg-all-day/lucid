@@ -20,11 +20,9 @@
       "adaptiveIcon": {
         "backgroundColor": "#5B5FC7",
         "foregroundImage": "./src/icons/adaptive-icon.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundImage": "./assets/android-icon-background.png"
       },
-      "package": "com.anonymous.lucid",
-      "usesCleartextTraffic": true
+      "package": "com.anonymous.lucid"
     },
     "web": {
       "favicon": "./assets/favicon.png"
