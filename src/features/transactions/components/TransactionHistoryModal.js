@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 import { TimePastIcon } from '../../../icons';
 import { formatDate, formatActionLabel } from '../utils/formatters';
 
@@ -24,6 +25,7 @@ export default function TransactionHistoryModal({
   history,
   loading,
 }) {
+  const theme = useTheme();
   return (
     <Modal
       visible={visible}
@@ -32,7 +34,7 @@ export default function TransactionHistoryModal({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.modalBg }]}>
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={onClose} style={styles.backBtn}>
@@ -50,20 +52,20 @@ export default function TransactionHistoryModal({
           ) : (
             <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
               {/* History card */}
-              <View style={styles.historyCard}>
+              <View style={[styles.historyCard, { backgroundColor: theme.primary10 }]}>
                 {history.length === 0 ? (
                   <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>No history yet.</Text>
+                    <Text style={[styles.emptyText, { color: theme.textSecondary }]}>No history yet.</Text>
                   </View>
                 ) : (
                   <ScrollView nestedScrollEnabled showsVerticalScrollIndicator>
                     {history.map((item, index) => (
                       <View key={item.id || `h-${index}`}>
                         <View style={styles.historyItem}>
-                          <Text style={styles.action}>
+                          <Text style={[styles.action, { color: theme.text }]}>
                             {formatActionLabel(item.action) || item.action}
                           </Text>
-                          <Text style={styles.date}>{formatDate(item.created_at)}</Text>
+                          <Text style={[styles.date, { color: theme.text }]}>{formatDate(item.created_at)}</Text>
                         </View>
                         {index < history.length - 1 && <View style={styles.divider} />}
                       </View>
@@ -78,12 +80,12 @@ export default function TransactionHistoryModal({
                 <Text style={styles.faqTitle}>Got Questions?</Text>
               </View>
 
-              <View style={styles.card}>
+              <View style={[styles.card, { backgroundColor: theme.primary10 }]}>
                 {FAQ_ITEMS.map((question, index) => (
                   <View key={index}>
                     <TouchableOpacity style={styles.faqRow}>
-                      <Text style={styles.faqText}>{question}</Text>
-                      <Ionicons name="chevron-forward" size={16} color="#212121" />
+                      <Text style={[styles.faqText, { color: theme.text }]}>{question}</Text>
+                      <Ionicons name="chevron-forward" size={16} color={theme.text} />
                     </TouchableOpacity>
                     <View style={styles.divider} />
                   </View>

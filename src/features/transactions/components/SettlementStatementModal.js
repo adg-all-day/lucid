@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 
 const BLUE = Colors.primary;
 const BLUE_BG = Colors.primary10;
@@ -22,6 +23,7 @@ export default function SettlementStatementModal({
   statementData,
   loading,
 }) {
+  const theme = useTheme();
   const currency = transaction?.currency || 'USD';
   const items = statementData?.settlements || settlements || [];
 
@@ -66,7 +68,7 @@ export default function SettlementStatementModal({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.modalBg }]}>
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={onClose} style={styles.backBtn}>
@@ -81,11 +83,11 @@ export default function SettlementStatementModal({
           ) : (
             <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
               {/* Main Table */}
-              <View style={styles.tableCard}>
+              <View style={[styles.tableCard, { backgroundColor: theme.primary10 }]}>
                 {/* Header row */}
                 <View style={styles.tableHeaderRow}>
-                  <Text style={styles.tableHeaderLabel}>Description</Text>
-                  <Text style={styles.tableHeaderCurrency}>{currency}</Text>
+                  <Text style={[styles.tableHeaderLabel, { color: theme.text }]}>Description</Text>
+                  <Text style={[styles.tableHeaderCurrency, { color: theme.text }]}>{currency}</Text>
                 </View>
                 <View style={styles.grayDivider} />
 
@@ -93,10 +95,10 @@ export default function SettlementStatementModal({
                 {rows.map((item, index) => (
                   <View key={item.id || `row-${index}`}>
                     <View style={styles.tableRow}>
-                      <Text style={styles.rowLabel}>
+                      <Text style={[styles.rowLabel, { color: theme.text }]}>
                         {item.description || `Settlement ${index + 1}`}
                       </Text>
-                      <Text style={styles.rowValue}>
+                      <Text style={[styles.rowValue, { color: theme.text }]}>
                         {item.isCredit
                           ? `${formatNum(item.amount)}  CR`
                           : `(${formatNum(item.amount)})  DR`}
@@ -108,7 +110,7 @@ export default function SettlementStatementModal({
               </View>
 
               {/* Summary */}
-              <View style={styles.summaryCard}>
+              <View style={[styles.summaryCard, { backgroundColor: theme.primary10 }]}>
                 {/* Summary header */}
                 <Text style={styles.summaryTitle}>Summary</Text>
                 <View style={styles.summaryUnderline} />

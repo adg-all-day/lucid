@@ -8,10 +8,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 import { formatShortDate } from '../utils/formatters';
 
 export default function ActivityLog({ activityLog }) {
   const router = useRouter();
+  const theme = useTheme();
   // Track which activity row is currently expanded (only one at a time)
   const [expandedActivity, setExpandedActivity] = useState(
     activityLog.length > 0 ? activityLog[0].id : null
@@ -26,12 +28,12 @@ export default function ActivityLog({ activityLog }) {
           style={styles.activityRow}
           onPress={() => setExpandedActivity(isExpanded ? null : item.id)}
         >
-          <Text style={styles.activityDate}>{formatShortDate(item.created_at)}</Text>
-          <Text style={styles.activityText}>{item.event}</Text>
+          <Text style={[styles.activityDate, { color: theme.textSecondary }]}>{formatShortDate(item.created_at)}</Text>
+          <Text style={[styles.activityText, { color: theme.textSecondary }]}>{item.event}</Text>
           <Ionicons
             name={isExpanded ? 'chevron-down' : 'chevron-forward'}
             size={16}
-            color={Colors.gray}
+            color={theme.textSecondary}
           />
         </TouchableOpacity>
 
@@ -39,29 +41,29 @@ export default function ActivityLog({ activityLog }) {
         {isExpanded && item.device && (
           <View style={styles.activityDetails}>
             <View style={styles.activityDetailRow}>
-              <Text style={styles.activityDetailLabel}>Device:</Text>
-              <Text style={styles.activityDetailValue}>{item.device}</Text>
+              <Text style={[styles.activityDetailLabel, { color: theme.textSecondary }]}>Device:</Text>
+              <Text style={[styles.activityDetailValue, { color: theme.textSecondary }]}>{item.device}</Text>
             </View>
             <View style={styles.activityDetailRow}>
-              <Text style={styles.activityDetailLabel}>Browser:</Text>
-              <Text style={styles.activityDetailValue}>{item.browser}</Text>
+              <Text style={[styles.activityDetailLabel, { color: theme.textSecondary }]}>Browser:</Text>
+              <Text style={[styles.activityDetailValue, { color: theme.textSecondary }]}>{item.browser}</Text>
             </View>
             <View style={styles.activityDetailRow}>
-              <Text style={styles.activityDetailLabel}>IP Address:</Text>
-              <Text style={styles.activityDetailValue}>{item.ip}</Text>
+              <Text style={[styles.activityDetailLabel, { color: theme.textSecondary }]}>IP Address:</Text>
+              <Text style={[styles.activityDetailValue, { color: theme.textSecondary }]}>{item.ip}</Text>
             </View>
           </View>
         )}
 
-        <View style={styles.activityDivider} />
+        <View style={[styles.activityDivider, { backgroundColor: theme.divider }]} />
       </View>
     );
   };
 
   return (
-    <View style={styles.sectionCard}>
-      <Text style={styles.activityTitle}>Activity Log</Text>
-      <Text style={styles.suspiciousText}>
+    <View style={[styles.sectionCard, { backgroundColor: theme.cardBg }]}>
+      <Text style={[styles.activityTitle, { color: theme.text }]}>Activity Log</Text>
+      <Text style={[styles.suspiciousText, { color: theme.text }]}>
         Notice anything suspicious?{' '}
         <Text style={styles.linkText} onPress={() => router.push('/change-password')}>
           Change your password
@@ -70,10 +72,10 @@ export default function ActivityLog({ activityLog }) {
 
       {/* Column headers */}
       <View style={styles.activityTableHeader}>
-        <Text style={styles.activityHeaderDate}>Date</Text>
-        <Text style={styles.activityHeaderActivity}>Activity</Text>
+        <Text style={[styles.activityHeaderDate, { color: theme.textSecondary }]}>Date</Text>
+        <Text style={[styles.activityHeaderActivity, { color: theme.textSecondary }]}>Activity</Text>
       </View>
-      <View style={styles.activityDivider} />
+      <View style={[styles.activityDivider, { backgroundColor: theme.divider }]} />
 
       {activityLog.map(renderActivityItem)}
     </View>

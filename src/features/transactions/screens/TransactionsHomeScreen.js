@@ -24,9 +24,12 @@ import ActivityLog from '../components/ActivityLog';
 import useTransactionFilters from '../hooks/useTransactionFilters';
 import { TABS, OPEN_STATUSES, CLOSED_STATUSES } from '../utils/constants';
 import useUiStore from '../../../stores/uiStore';
+import useTheme from '../../../hooks/useTheme';
 
 export default function TransactionsHomeScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const isDark = theme.isDark;
   const userName = useUserStore((state) => state.name);
   const userAvatar = useUserStore((state) => state.avatar);
   const activeTab = useUiStore((state) => state.activeTab);
@@ -79,7 +82,7 @@ export default function TransactionsHomeScreen() {
   }, [activeTab, tabLayouts, underlineLeft, underlineWidth]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Header
         name={userName || 'there'}
         avatarUri={userAvatar}
@@ -98,14 +101,14 @@ export default function TransactionsHomeScreen() {
         <TransactionStats stats={stats} />
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My Transactions</Text>
-          <View style={styles.sectionCard}>
+          <Text style={[styles.sectionTitle, { color: isDark ? theme.text : Colors.primary }]}>My Transactions</Text>
+          <View style={[styles.sectionCard, { backgroundColor: theme.primary5 }]}>
 
             <View style={styles.searchRow}>
-              <View style={styles.searchBar}>
-                <SearchIcon size={13} color={Colors.grayMedium} />
+              <View style={[styles.searchBar, { backgroundColor: theme.cardBg }]}>
+                <SearchIcon size={13} color={theme.iconMuted} />
                 <TextInput
-                  style={styles.searchInput}
+                  style={[styles.searchInput, { color: theme.text }]}
                   value={searchText}
                   onChangeText={setSearchText}
                   placeholder="Search"
@@ -117,11 +120,11 @@ export default function TransactionsHomeScreen() {
                   </TouchableOpacity>
                 ) : null}
               </View>
-              <TouchableOpacity style={styles.iconButton}>
-                <Ionicons name="filter" size={22} color={Colors.grayMedium} />
+              <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardBg }]}>
+                <Ionicons name="filter" size={22} color={theme.iconMuted} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
-                <Ionicons name="swap-vertical" size={20} color={Colors.grayMedium} />
+              <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardBg }]}>
+                <Ionicons name="swap-vertical" size={20} color={theme.iconMuted} />
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.newBtn}
@@ -156,7 +159,7 @@ export default function TransactionsHomeScreen() {
                       });
                     }}
                   >
-                    <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+                    <Text style={[styles.tabText, { color: theme.textSecondary }, activeTab === tab && styles.tabTextActive]}>
                       {tab}
                     </Text>
                   </TouchableOpacity>
@@ -182,7 +185,7 @@ export default function TransactionsHomeScreen() {
                 style={styles.loading}
               />
             ) : filteredTransactions.length === 0 ? (
-              <Text style={styles.emptyText}>No transactions found</Text>
+              <Text style={[styles.emptyText, { color: theme.text }]}>No transactions found</Text>
             ) : (
               filteredTransactions.map((item) => (
                 <TransactionCard

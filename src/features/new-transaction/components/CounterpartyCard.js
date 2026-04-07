@@ -14,6 +14,7 @@ import { useFormContext, Controller } from 'react-hook-form';
 import { Ionicons } from '@expo/vector-icons';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 import OutlinedField from '../../../components/OutlinedField';
 import PickerModal from '../../../components/PickerModal';
 import CounterpartyFilterIcon from '../../../icons/CounterpartyFilterIcon';
@@ -44,6 +45,7 @@ function DragDots() {
  */
 export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) {
   const { watch, setValue, control } = useFormContext();
+  const theme = useTheme();
 
   // Local state for picker modals
   const [showPhoneCodePicker, setShowPhoneCodePicker] = useState(false);
@@ -60,7 +62,7 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
   };
 
   return (
-    <View style={styles.counterpartyCard}>
+    <View style={[styles.counterpartyCard, { backgroundColor: theme.isDark ? theme.modalBg : theme.surfaceLight }]}>
       <View style={{ flexDirection: 'row' }}>
         <View style={styles.counterpartyProgressBar}>
           <DragDots />
@@ -95,17 +97,18 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
           {!collapsed && (
             <>
               {/* Email */}
-              <OutlinedField label="Email" bgColor="white">
+              <OutlinedField label="Email" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                 <View style={styles.inputRow}>
                   <Controller
                     control={control}
                     name={`${prefix}.email`}
                     render={({ field: { onChange, value } }) => (
                       <TextInput
-                        style={[styles.input, { flex: 1, borderWidth: 0 }]}
+                        style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: theme.inputBg, color: theme.text }]}
                         value={value}
                         onChangeText={onChange}
                         placeholder="Email"
+                        placeholderTextColor={theme.textSecondary}
                         keyboardType="email-address"
                       />
                     )}
@@ -117,13 +120,13 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
               </OutlinedField>
 
               {/* Telephone */}
-              <OutlinedField label="Telephone (Optional)" bgColor="white">
+              <OutlinedField label="Telephone (Optional)" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                 <View style={styles.phoneRow}>
                   <TouchableOpacity
                     style={styles.phoneCode}
                     onPress={() => setShowPhoneCodePicker(true)}
                   >
-                    <Text style={styles.phoneCodeText}>{cp?.phoneCode || '+234'}</Text>
+                    <Text style={[styles.phoneCodeText, { color: theme.text }]}>{cp?.phoneCode || '+234'}</Text>
                     <Ionicons name="chevron-down" size={12} color={Colors.gray} />
                   </TouchableOpacity>
                   <View style={styles.phoneDivider} />
@@ -132,10 +135,11 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
                     name={`${prefix}.phone`}
                     render={({ field: { onChange, value } }) => (
                       <TextInput
-                        style={[styles.input, { flex: 1, borderWidth: 0 }]}
+                        style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: theme.inputBg, color: theme.text }]}
                         value={value}
                         onChangeText={onChange}
                         placeholder="(0) 8041234567"
+                        placeholderTextColor={theme.textSecondary}
                         keyboardType="phone-pad"
                       />
                     )}
@@ -144,12 +148,12 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
               </OutlinedField>
 
               {/* Role */}
-              <OutlinedField label="Role" bgColor="white">
+              <OutlinedField label="Role" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                 <TouchableOpacity
-                  style={styles.dropdownInput}
+                  style={[styles.dropdownInput, { backgroundColor: theme.inputBg }]}
                   onPress={() => setShowRolePicker(true)}
                 >
-                  <Text style={cp?.role ? styles.dropdownText : styles.dropdownPlaceholder}>
+                  <Text style={cp?.role ? [styles.dropdownText, { color: theme.text }] : styles.dropdownPlaceholder}>
                     {cp?.role ? formatType(cp.role) : 'Select Role'}
                   </Text>
                   <Ionicons name="chevron-down" size={16} color={Colors.gray} />
@@ -159,15 +163,16 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
               {/* First Name */}
               <View style={styles.nameRow}>
                 <View style={{ flex: 1 }}>
-                  <OutlinedField label="First Name" bgColor="white">
+                  <OutlinedField label="First Name" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                     <Controller
                       control={control}
                       name={`${prefix}.firstName`}
                       render={({ field: { onChange, value } }) => (
                         <TextInput
-                          style={styles.input}
+                          style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text }]}
                           value={value}
                           onChangeText={onChange}
+                          placeholderTextColor={theme.textSecondary}
                         />
                       )}
                     />
@@ -176,37 +181,39 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
               </View>
 
               {/* Middle Name */}
-              <OutlinedField label="Middle Name" bgColor="white">
+              <OutlinedField label="Middle Name" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                 <Controller
                   control={control}
                   name={`${prefix}.middleName`}
                   render={({ field: { onChange, value } }) => (
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text }]}
                       value={value}
                       onChangeText={onChange}
+                      placeholderTextColor={theme.textSecondary}
                     />
                   )}
                 />
               </OutlinedField>
 
               {/* Last Name */}
-              <OutlinedField label="Last Name" bgColor="white">
+              <OutlinedField label="Last Name" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                 <Controller
                   control={control}
                   name={`${prefix}.lastName`}
                   render={({ field: { onChange, value } }) => (
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text }]}
                       value={value}
                       onChangeText={onChange}
+                      placeholderTextColor={theme.textSecondary}
                     />
                   )}
                 />
               </OutlinedField>
 
               {/* Notification preferences */}
-              <Text style={styles.inputLabel}>Notify Counterparty By:</Text>
+              <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Notify Counterparty By:</Text>
               <View style={styles.checkboxRow}>
                 <TouchableOpacity
                   style={styles.checkbox}
@@ -217,7 +224,7 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
                     size={20}
                     color={Colors.primary}
                   />
-                  <Text style={styles.checkboxLabel}>Email</Text>
+                  <Text style={[styles.checkboxLabel, { color: theme.text }]}>Email</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.checkbox}
@@ -228,7 +235,7 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
                     size={20}
                     color={Colors.primary}
                   />
-                  <Text style={styles.checkboxLabel}>Text Message</Text>
+                  <Text style={[styles.checkboxLabel, { color: theme.text }]}>Text Message</Text>
                 </TouchableOpacity>
               </View>
 
@@ -260,19 +267,20 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
                       <Ionicons name="trash-outline" size={20} color={Colors.error} />
                     </TouchableOpacity>
                   </View>
-                  <Text style={styles.securityNote}>
+                  <Text style={[styles.securityNote, { color: theme.textSecondary }]}>
                     Provide this Access Code to the counterparty for access this transaction
                   </Text>
 
-                  <OutlinedField label="Access Code (Optional)" bgColor="white">
+                  <OutlinedField label="Access Code (Optional)" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                     <Controller
                       control={control}
                       name={`${prefix}.accessCode`}
                       render={({ field: { onChange, value } }) => (
                         <TextInput
-                          style={styles.input}
+                          style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text }]}
                           value={value}
                           onChangeText={onChange}
+                          placeholderTextColor={theme.textSecondary}
                         />
                       )}
                     />
@@ -285,7 +293,7 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
                   <View style={styles.toggleRow}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                       <PhotoIdIcon size={18} />
-                      <Text style={styles.toggleLabel}>Require Photo ID verification</Text>
+                      <Text style={[styles.toggleLabel, { color: theme.text }]}>Require Photo ID verification</Text>
                     </View>
                     <Switch
                       value={cp?.requirePhotoId ?? false}
@@ -295,18 +303,19 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
                     />
                   </View>
 
-                  <OutlinedField label="Private Message (0/1000)" bgColor="white">
+                  <OutlinedField label="Private Message (0/1000)" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                     <Controller
                       control={control}
                       name={`${prefix}.privateMessage`}
                       render={({ field: { onChange, value } }) => (
                         <TextInput
-                          style={[styles.input, styles.textArea]}
+                          style={[styles.input, styles.textArea, { backgroundColor: theme.inputBg, color: theme.text }]}
                           value={value}
                           onChangeText={onChange}
                           multiline
                           numberOfLines={3}
                           placeholder="Enter private message..."
+                          placeholderTextColor={theme.textSecondary}
                         />
                       )}
                     />
@@ -315,11 +324,11 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
                   {/* Permissions grid */}
                   <View style={{ marginVertical: 12 }} />
                   <View style={styles.sectionRow}>
-                    <Text style={[styles.sectionTitle, { fontSize: 16, color: Colors.black, fontWeight: '400' }]}>
+                    <Text style={[styles.sectionTitle, { fontSize: 16, color: theme.text, fontWeight: '400' }]}>
                       Permissions
                     </Text>
                   </View>
-                  <Text style={[styles.securityNote, { color: Colors.black }]}>
+                  <Text style={[styles.securityNote, { color: theme.text }]}>
                     Actions this Counterparty can perform on this transaction
                   </Text>
 
@@ -345,7 +354,7 @@ export default function CounterpartyCard({ index, onRemove, onToggleCollapse }) 
                           size={20}
                           color={Colors.gray}
                         />
-                        <Text style={styles.permissionLabel}>{label}</Text>
+                        <Text style={[styles.permissionLabel, { color: theme.text }]}>{label}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>

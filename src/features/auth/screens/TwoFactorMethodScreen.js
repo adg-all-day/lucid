@@ -91,7 +91,7 @@ export default function TwoFactorMethodScreen() {
   });
 
   return (
-    <AuthShell title="Two-Factor Authentication">
+    <AuthShell title="Two-Factor Authentication" cardStyle={styles.card}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
@@ -142,6 +142,9 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingBottom: 2,
+  },
+  card: {
+    minHeight: 760,
   },
   heading: {
     fontSize: 13,

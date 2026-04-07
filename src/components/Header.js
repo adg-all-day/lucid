@@ -13,12 +13,14 @@ import useUserStore from '../stores/userStore';
 import useUiStore from '../stores/uiStore';
 import queryClient from '../api/queryClient';
 import { useLogout } from '../api/queries/auth';
+import useTheme from '../hooks/useTheme';
 
 export default function Header({ name, avatarUri }) {
   const router = useRouter();
   const logoutMutation = useLogout();
   const darkMode = useUiStore((s) => s.darkMode);
   const toggleDarkMode = useUiStore((s) => s.toggleDarkMode);
+  const theme = useTheme();
   const [showMenu, setShowMenu] = useState(false);
 
   const handleLogout = async () => {
@@ -34,7 +36,7 @@ export default function Header({ name, avatarUri }) {
   };
 
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { backgroundColor: theme.headerBg, borderBottomColor: theme.divider }]}>
       <View style={styles.headerContent}>
         <View style={styles.headerLeft}>
           <TouchableOpacity
@@ -70,9 +72,9 @@ export default function Header({ name, avatarUri }) {
             </Text>
           )}
         </View>
-        <View style={styles.logoContainer}>
-          <LucidLogo size={20} />
-        </View>
+          <View style={styles.logoContainer}>
+            <LucidLogo size={20} color={theme.logoColor} accentColor={theme.logoAccent} />
+          </View>
       </View>
     </View>
   );

@@ -5,7 +5,7 @@ import Text from '../../../components/StyledText';
 import LucidLogo from '../../../icons/LucidLogo';
 import Colors from '../../../constants/colors';
 
-export default function AuthShell({ title, children }) {
+export default function AuthShell({ title, children, cardStyle }) {
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <View style={styles.headerBand}>
@@ -15,7 +15,7 @@ export default function AuthShell({ title, children }) {
         </View>
       </View>
       <View style={styles.content}>
-        <View style={styles.card}>{children}</View>
+        <View style={[styles.card, cardStyle]}>{children}</View>
       </View>
     </SafeAreaView>
   );

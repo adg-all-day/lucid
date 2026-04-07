@@ -6,6 +6,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 
 // Icons are being moved to the shared icons directory by another workstream,
 // so we import from there to stay ahead of the migration.
@@ -40,11 +41,13 @@ const renderIcon = (iconName) => {
 };
 
 export default function TransactionStats({ stats }) {
+  const theme = useTheme();
+  const isDark = theme.isDark;
   return (
-    <View style={styles.statsSection}>
+    <View style={[styles.statsSection, { backgroundColor: theme.primary5 }]}>
       <View style={styles.statsContainer}>
         {STAT_CARDS.map((item) => (
-          <View key={item.id} style={styles.statCard}>
+          <View key={item.id} style={[styles.statCard, isDark && styles.statCardDark]}>
             <View style={styles.statTopRow}>
               <View style={styles.statIconArea}>{renderIcon(item.icon)}</View>
               <Text style={styles.statCount}>{stats[item.countKey] || 0}</Text>
@@ -86,6 +89,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+  statCardDark: {
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
   statTopRow: {
     flexDirection: 'row',

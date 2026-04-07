@@ -33,7 +33,7 @@ export default function RecoveryCodeScreen() {
   });
 
   return (
-    <AuthShell title="Recovery Code">
+    <AuthShell title="Recovery Code" cardStyle={styles.card}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
@@ -72,6 +72,9 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingBottom: 2,
+  },
+  card: {
+    minHeight: 760,
   },
   heading: {
     fontSize: 13,

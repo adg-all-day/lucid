@@ -21,7 +21,7 @@ export default function EmailVerificationScreen({ email = '' }) {
   };
 
   return (
-    <AuthShell title="Email Verification">
+    <AuthShell title="Email Verification" cardStyle={styles.card}>
       <View style={styles.content}>
         <View style={styles.illustrationCircle}>
           <EmailVerificationIllustration size={60} />
@@ -58,6 +58,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingTop: 20,
+  },
+  card: {
+    minHeight: 760,
   },
   illustrationCircle: {
     width: 150,

@@ -8,6 +8,7 @@ import { useFormContext, Controller } from 'react-hook-form';
 import { Ionicons } from '@expo/vector-icons';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 import OutlinedField from '../../../components/OutlinedField';
 import PickerModal from '../../../components/PickerModal';
 import CounterpartyTrashIcon from '../../../icons/CounterpartyTrashIcon';
@@ -37,6 +38,7 @@ function DragDots() {
  */
 export default function SettlementCard({ index, onRemove, counterpartyNames }) {
   const { watch, setValue, control } = useFormContext();
+  const theme = useTheme();
 
   // Local picker state
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
@@ -48,7 +50,7 @@ export default function SettlementCard({ index, onRemove, counterpartyNames }) {
   const collapsed = settlement?.collapsed ?? false;
 
   return (
-    <View style={styles.settlementCard}>
+    <View style={[styles.settlementCard, { backgroundColor: theme.isDark ? theme.modalBg : theme.surfaceLight }]}>
       <View style={{ flexDirection: 'row' }}>
         <View style={styles.progressBar}>
           <DragDots />
@@ -79,18 +81,19 @@ export default function SettlementCard({ index, onRemove, counterpartyNames }) {
             <>
               {/* Description row with number */}
               <View style={styles.settlementHeader}>
-                <Text style={styles.documentNumber}>{index + 1}.</Text>
+                <Text style={[styles.documentNumber, { color: theme.text }]}>{index + 1}.</Text>
                 <View style={{ flex: 1 }}>
-                  <OutlinedField label="Description" bgColor="white">
+                  <OutlinedField label="Description" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                     <Controller
                       control={control}
                       name={`${prefix}.description`}
                       render={({ field: { onChange, value } }) => (
                         <TextInput
-                          style={styles.input}
+                          style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text }]}
                           value={value}
                           onChangeText={onChange}
                           placeholder="Description"
+                          placeholderTextColor={theme.textSecondary}
                         />
                       )}
                     />
@@ -100,14 +103,14 @@ export default function SettlementCard({ index, onRemove, counterpartyNames }) {
 
               <View style={styles.settlementFields}>
                 {/* Value field -- changes display based on fixed vs percentage */}
-                <OutlinedField label="Value" bgColor="white">
+                <OutlinedField label="Value" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                   {settlement?.isFixed ? (
                     <View style={styles.valueRow}>
                       <TouchableOpacity
                         style={styles.currencyBadge}
                         onPress={() => setShowCurrencyPicker(true)}
                       >
-                        <Text style={styles.currencyText}>
+                        <Text style={[styles.currencyText, { color: theme.text }]}>
                           {getCurrencyDisplay(settlement?.currency || 'USD')}
                         </Text>
                         <Ionicons name="chevron-down" size={14} color={Colors.gray} />
@@ -117,10 +120,11 @@ export default function SettlementCard({ index, onRemove, counterpartyNames }) {
                         name={`${prefix}.value`}
                         render={({ field: { onChange, value } }) => (
                           <TextInput
-                            style={[styles.input, { flex: 1, borderWidth: 0 }]}
+                            style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: theme.inputBg, color: theme.text }]}
                             value={value}
                             onChangeText={onChange}
                             placeholder="0.00"
+                            placeholderTextColor={theme.textSecondary}
                             keyboardType="numeric"
                           />
                         )}
@@ -129,7 +133,7 @@ export default function SettlementCard({ index, onRemove, counterpartyNames }) {
                   ) : (
                     <View style={styles.valueRow}>
                       <View style={styles.currencyBadge}>
-                        <Text style={styles.currencyText}>%</Text>
+                        <Text style={[styles.currencyText, { color: theme.text }]}>%</Text>
                         <Ionicons name="chevron-down" size={14} color={Colors.gray} />
                       </View>
                       <Controller
@@ -137,10 +141,11 @@ export default function SettlementCard({ index, onRemove, counterpartyNames }) {
                         name={`${prefix}.value`}
                         render={({ field: { onChange, value } }) => (
                           <TextInput
-                            style={[styles.input, { flex: 1, borderWidth: 0 }]}
+                            style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: theme.inputBg, color: theme.text }]}
                             value={value}
                             onChangeText={onChange}
                             placeholder="0%"
+                            placeholderTextColor={theme.textSecondary}
                             keyboardType="numeric"
                           />
                         )}
@@ -166,12 +171,12 @@ export default function SettlementCard({ index, onRemove, counterpartyNames }) {
                 </TouchableOpacity>
 
                 {/* Due From picker */}
-                <OutlinedField label="Due From" bgColor="white">
+                <OutlinedField label="Due From" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                   <TouchableOpacity
-                    style={styles.dropdownInput}
+                    style={[styles.dropdownInput, { backgroundColor: theme.inputBg }]}
                     onPress={() => setShowDueFromPicker(true)}
                   >
-                    <Text style={settlement?.dueFrom ? styles.dropdownText : styles.dropdownPlaceholder}>
+                    <Text style={settlement?.dueFrom ? [styles.dropdownText, { color: theme.text }] : styles.dropdownPlaceholder}>
                       {settlement?.dueFrom || 'Select counterparty'}
                     </Text>
                     <Ionicons name="chevron-down" size={16} color={Colors.gray} />
@@ -179,12 +184,12 @@ export default function SettlementCard({ index, onRemove, counterpartyNames }) {
                 </OutlinedField>
 
                 {/* Due To picker */}
-                <OutlinedField label="Due To" bgColor="white">
+                <OutlinedField label="Due To" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                   <TouchableOpacity
-                    style={styles.dropdownInput}
+                    style={[styles.dropdownInput, { backgroundColor: theme.inputBg }]}
                     onPress={() => setShowDueToPicker(true)}
                   >
-                    <Text style={settlement?.dueTo ? styles.dropdownText : styles.dropdownPlaceholder}>
+                    <Text style={settlement?.dueTo ? [styles.dropdownText, { color: theme.text }] : styles.dropdownPlaceholder}>
                       {settlement?.dueTo || 'Select counterparty'}
                     </Text>
                     <Ionicons name="chevron-down" size={16} color={Colors.gray} />

@@ -9,6 +9,7 @@ import NavHelpIcon from '../../src/icons/NavHelpIcon';
 import NavHeadsetIcon from '../../src/icons/NavHeadsetIcon';
 import NavSettingsIcon from '../../src/icons/NavSettingsIcon';
 import Text from '../../src/components/StyledText';
+import Colors from '../../src/constants/colors';
 
 export default function TabLayout() {
   const segments = useSegments();
@@ -22,14 +23,14 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#FFFFFF',
-        tabBarInactiveTintColor: '#FFFFFF',
+        tabBarActiveTintColor: Colors.white,
+        tabBarInactiveTintColor: Colors.white,
         tabBarStyle: {
           height: 104,
           paddingTop: 8,
           paddingBottom: 42,
           borderTopWidth: 0,
-          backgroundColor: '#5B5FC7',
+          backgroundColor: Colors.primary,
         },
       }}
     >
@@ -52,7 +53,7 @@ export default function TabLayout() {
                 <Text
                   style={{
                     fontSize: 12,
-                    color: '#FFFFFF',
+                    color: Colors.white,
                     fontFamily: isActuallyFocused ? 'Satoshi-Bold' : 'Satoshi-Regular',
                     marginTop: 2,
                   }}
@@ -64,7 +65,7 @@ export default function TabLayout() {
                     width: 32,
                     height: 3,
                     borderRadius: 1.5,
-                    backgroundColor: isActuallyFocused ? '#D9DFD9' : '#5B5FC7',
+                    backgroundColor: isActuallyFocused ? Colors.grayBg : Colors.primary,
                     marginTop: 4,
                   }}
                 />
@@ -86,7 +87,7 @@ export default function TabLayout() {
               <Text
                 style={{
                   fontSize: 12,
-                  color: '#FFFFFF',
+                  color: Colors.white,
                   fontFamily: focused ? 'Satoshi-Bold' : 'Satoshi-Regular',
                   marginTop: 2,
                 }}
@@ -98,7 +99,7 @@ export default function TabLayout() {
                   width: 32,
                   height: 3,
                   borderRadius: 1.5,
-                  backgroundColor: focused ? '#D9DFD9' : '#5B5FC7',
+                  backgroundColor: focused ? Colors.grayBg : Colors.primary,
                   marginTop: 4,
                 }}
               />
@@ -119,7 +120,7 @@ export default function TabLayout() {
               <Text
                 style={{
                   fontSize: 12,
-                  color: '#FFFFFF',
+                  color: Colors.white,
                   fontFamily: focused ? 'Satoshi-Bold' : 'Satoshi-Regular',
                   marginTop: 2,
                 }}
@@ -131,7 +132,7 @@ export default function TabLayout() {
                   width: 32,
                   height: 3,
                   borderRadius: 1.5,
-                  backgroundColor: focused ? '#D9DFD9' : '#5B5FC7',
+                  backgroundColor: focused ? Colors.grayBg : Colors.primary,
                   marginTop: 4,
                 }}
               />
@@ -152,7 +153,7 @@ export default function TabLayout() {
               <Text
                 style={{
                   fontSize: 12,
-                  color: '#FFFFFF',
+                  color: Colors.white,
                   fontFamily: focused ? 'Satoshi-Bold' : 'Satoshi-Regular',
                   marginTop: 2,
                 }}
@@ -164,7 +165,7 @@ export default function TabLayout() {
                   width: 32,
                   height: 3,
                   borderRadius: 1.5,
-                  backgroundColor: focused ? '#D9DFD9' : '#5B5FC7',
+                  backgroundColor: focused ? Colors.grayBg : Colors.primary,
                   marginTop: 4,
                 }}
               />

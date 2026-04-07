@@ -5,6 +5,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 
 /**
  * Props:
@@ -14,6 +15,7 @@ import Colors from '../../../constants/colors';
  * - submitting: shows a spinner on the submit button when true
  */
 export default function FormActions({ onDraft, onSubmit, savingDraft = false, submitting }) {
+  const theme = useTheme();
   return (
     <View style={styles.actionRow}>
       <TouchableOpacity style={styles.draftBtn} onPress={onDraft} disabled={savingDraft || submitting}>
@@ -23,7 +25,7 @@ export default function FormActions({ onDraft, onSubmit, savingDraft = false, su
           <Text style={styles.draftBtnText}>Save as Draft</Text>
         )}
       </TouchableOpacity>
-      <TouchableOpacity style={styles.submitBtn} onPress={onSubmit} disabled={savingDraft || submitting}>
+      <TouchableOpacity style={[styles.submitBtn, { backgroundColor: theme.inputBg }]} onPress={onSubmit} disabled={savingDraft || submitting}>
         {submitting ? (
           <ActivityIndicator color={Colors.primary} />
         ) : (

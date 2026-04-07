@@ -3,11 +3,13 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Text from './StyledText';
+import useTheme from '../hooks/useTheme';
 
-export default function OutlinedField({ label, bgColor = 'white', children }) {
+export default function OutlinedField({ label, bgColor, children }) {
+  const theme = useTheme();
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { backgroundColor: bgColor }]}>{label}</Text>
+      <Text style={[styles.label, { backgroundColor: bgColor || theme.cardBg, color: theme.textSecondary }]}>{label}</Text>
       {children}
     </View>
   );

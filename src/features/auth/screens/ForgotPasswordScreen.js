@@ -30,7 +30,7 @@ export default function ForgotPasswordScreen() {
   });
 
   return (
-    <AuthShell title="Forgot Password">
+    <AuthShell title="Forgot Password" cardStyle={styles.card}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
@@ -78,6 +78,9 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingBottom: 6,
+  },
+  card: {
+    minHeight: 760,
   },
   instruction: {
     fontSize: 14,

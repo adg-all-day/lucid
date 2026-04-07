@@ -8,6 +8,7 @@ import { useFormContext, Controller } from 'react-hook-form';
 import { Ionicons } from '@expo/vector-icons';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 import OutlinedField from '../../../components/OutlinedField';
 import CounterpartyTrashIcon from '../../../icons/CounterpartyTrashIcon';
 import CounterpartyCollapseIcon from '../../../icons/CounterpartyCollapseIcon';
@@ -34,13 +35,14 @@ function DragDots() {
  */
 export default function DocumentCard({ index, onRemove, onPickDocument }) {
   const { watch, setValue, control } = useFormContext();
+  const theme = useTheme();
 
   const prefix = `documents.${index}`;
   const doc = watch(prefix);
   const collapsed = doc?.collapsed ?? false;
 
   return (
-    <View style={styles.documentCard}>
+    <View style={[styles.documentCard, { backgroundColor: theme.isDark ? theme.modalBg : theme.surfaceLight }]}>
       <View style={{ flexDirection: 'row' }}>
         <View style={styles.progressBar}>
           <DragDots />
@@ -70,18 +72,19 @@ export default function DocumentCard({ index, onRemove, onPickDocument }) {
           {!collapsed && (
             <>
               <View style={styles.documentHeader}>
-                <Text style={styles.documentNumber}>{index + 1}.</Text>
+                <Text style={[styles.documentNumber, { color: theme.text }]}>{index + 1}.</Text>
                 <View style={{ flex: 1 }}>
-                  <OutlinedField label="Description" bgColor="white">
+                  <OutlinedField label="Description" bgColor={theme.isDark ? theme.modalBg : 'white'}>
                     <Controller
                       control={control}
                       name={`${prefix}.description`}
                       render={({ field: { onChange, value } }) => (
                         <TextInput
-                          style={styles.input}
+                          style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text }]}
                           value={value}
                           onChangeText={onChange}
                           placeholder="Description"
+                          placeholderTextColor={theme.textSecondary}
                         />
                       )}
                     />
@@ -95,7 +98,7 @@ export default function DocumentCard({ index, onRemove, onPickDocument }) {
               {doc?.file && (
                 <Text style={styles.fileNameText} numberOfLines={1}>{doc.file.name}</Text>
               )}
-              <Text style={styles.uploadHint}>
+              <Text style={[styles.uploadHint, { color: theme.textSecondary }]}>
                 Supported formats: .pdf, .jpeg, .png, .docx, .bmp{'\n'}Maximum file size: 10 MB
               </Text>
             </>

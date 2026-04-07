@@ -10,6 +10,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import queryClient from '../src/api/queryClient';
 import useAuthStore from '../src/stores/authStore';
+import useTheme from '../src/hooks/useTheme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -20,6 +21,7 @@ export default function RootLayout() {
   const segments = useSegments();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hydrating = useAuthStore((state) => state.hydrating);
+  const theme = useTheme();
 
   useEffect(() => {
     if (hydrating) return;
@@ -53,7 +55,7 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.background }} onLayout={onLayoutRootView}>
       <QueryClientProvider client={queryClient}>
         <StatusBar style="light" />
         <Stack initialRouteName="splash" screenOptions={{ headerShown: false }}>

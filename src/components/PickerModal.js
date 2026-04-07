@@ -11,8 +11,10 @@ import {
 } from 'react-native';
 import Text from './StyledText';
 import Colors from '../constants/colors';
+import useTheme from '../hooks/useTheme';
 
 export default function PickerModal({ visible, onClose, onSelect, items, title, searchable }) {
+  const theme = useTheme();
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -30,13 +32,14 @@ export default function PickerModal({ visible, onClose, onSelect, items, title, 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+        <Pressable style={[styles.sheet, { backgroundColor: theme.modalBg }]} onPress={(e) => e.stopPropagation()}>
           <View style={styles.handle} />
-          {title && <Text style={styles.title}>{title}</Text>}
+          {title && <Text style={[styles.title, { color: theme.text }]}>{title}</Text>}
           {searchable && (
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { backgroundColor: theme.inputBg, color: theme.text }]}
               placeholder="Search..."
+              placeholderTextColor={theme.textSecondary}
               value={search}
               onChangeText={setSearch}
               autoCorrect={false}
@@ -47,7 +50,7 @@ export default function PickerModal({ visible, onClose, onSelect, items, title, 
             keyExtractor={(item, i) => item.value + i}
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.row} onPress={() => handleSelect(item)}>
-                <Text style={styles.rowText}>{item.label}</Text>
+                <Text style={[styles.rowText, { color: theme.text }]}>{item.label}</Text>
               </TouchableOpacity>
             )}
             style={styles.list}
@@ -90,6 +93,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     marginHorizontal: 20,
+    backgroundColor: Colors.white,
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: 8,

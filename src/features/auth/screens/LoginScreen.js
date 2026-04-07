@@ -46,7 +46,7 @@ export default function LoginScreen() {
   });
 
   return (
-    <AuthShell title="Log In">
+    <AuthShell title="Log In" cardStyle={styles.card}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
@@ -106,6 +106,9 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingBottom: 6,
+  },
+  card: {
+    minHeight: 760,
   },
   linkText: {
     color: Colors.primary,

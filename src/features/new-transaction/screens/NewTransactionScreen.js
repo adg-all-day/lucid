@@ -11,6 +11,7 @@ import { FormProvider } from 'react-hook-form';
 import { useRouter } from 'expo-router';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 import CloseIcon from '../../../icons/CloseIcon';
 import { useCreateTransaction } from '../../../api/queries/transactions';
 import useUserStore from '../../../stores/userStore';
@@ -54,6 +55,7 @@ function collectErrorMessages(value, path = '', messages = []) {
 
 export default function NewTransactionScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const userEmail = useUserStore((state) => state.email);
   const { form, counterpartyFields, documentFields, settlementFields } =
     useNewTransactionForm();
@@ -155,9 +157,9 @@ export default function NewTransactionScreen() {
   return (
     <View style={styles.overlay}>
       <Pressable style={styles.backdrop} onPress={() => router.back()} />
-      <View style={styles.sheet}>
+      <View style={[styles.sheet, { backgroundColor: theme.modalBg }]}>
         <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
-          <CloseIcon size={32} />
+          <CloseIcon size={20} />
         </TouchableOpacity>
 
         <FormProvider {...form}>
@@ -167,7 +169,7 @@ export default function NewTransactionScreen() {
             <TransactionBasicFields />
 
             <View style={styles.inlineToggle}>
-              <Text style={styles.inlineToggleLabel}>Insert Signing Order</Text>
+              <Text style={[styles.inlineToggleLabel, { color: theme.text }]}>Insert Signing Order</Text>
               <TouchableOpacity
                 style={[
                   styles.inlineToggleTrack,
@@ -208,7 +210,7 @@ export default function NewTransactionScreen() {
               />
             ))}
             <TouchableOpacity
-              style={styles.secondaryButton}
+              style={[styles.secondaryButton, { backgroundColor: theme.inputBg }]}
               onPress={() => counterpartyFields.append({ ...initialCounterparty })}
             >
               <Text style={styles.secondaryButtonText}>Add Counterparty</Text>
@@ -224,7 +226,7 @@ export default function NewTransactionScreen() {
               />
             ))}
             <TouchableOpacity
-              style={styles.secondaryButton}
+              style={[styles.secondaryButton, { backgroundColor: theme.inputBg }]}
               onPress={() => documentFields.append({ ...initialDocument })}
             >
               <Text style={styles.secondaryButtonText}>Add Document</Text>
@@ -249,7 +251,7 @@ export default function NewTransactionScreen() {
               />
             ))}
             <TouchableOpacity
-              style={styles.secondaryButton}
+              style={[styles.secondaryButton, { backgroundColor: theme.inputBg }]}
               onPress={() => settlementFields.append({ ...initialSettlement })}
             >
               <Text style={styles.secondaryButtonText}>Add Settlement</Text>
@@ -297,10 +299,11 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   title: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: '700',
     color: Colors.primary,
     marginBottom: 8,
+    textAlign: 'center',
   },
   inlineToggle: {
     marginTop: 16,

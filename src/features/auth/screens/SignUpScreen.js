@@ -63,7 +63,7 @@ export default function SignUpScreen() {
   });
 
   return (
-    <AuthShell title="Sign Up">
+    <AuthShell title="Sign Up" cardStyle={styles.card}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
@@ -158,6 +158,9 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingBottom: 6,
+  },
+  card: {
+    minHeight: 760,
   },
   rulesBlock: {
     marginTop: -4,

@@ -69,7 +69,7 @@ export default function PasswordChangeScreen({ resetToken }) {
 
   if (!resetToken) {
     return (
-      <AuthShell title="Password Change">
+      <AuthShell title="Password Change" cardStyle={styles.card}>
         <View style={styles.missingTokenContent}>
           <Text style={styles.errorText}>Invalid or expired reset link.</Text>
           <Pressable style={styles.backButton} onPress={() => router.replace('/log-in')}>
@@ -81,7 +81,7 @@ export default function PasswordChangeScreen({ resetToken }) {
   }
 
   return (
-    <AuthShell title="Password Change">
+    <AuthShell title="Password Change" cardStyle={styles.card}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
@@ -158,6 +158,9 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingBottom: 6,
+  },
+  card: {
+    minHeight: 760,
   },
   rulesBlock: {
     marginTop: -4,

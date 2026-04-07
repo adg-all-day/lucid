@@ -15,16 +15,16 @@ export default function SplashScreen() {
 
   useEffect(() => {
     const holdTimer = setTimeout(() => {
-      Animated.parallel([
+        Animated.parallel([
         Animated.timing(opacity, {
           toValue: 0,
-          duration: 260,
+          duration: 400,
           easing: Easing.out(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(scale, {
           toValue: 1.04,
-          duration: 260,
+          duration: 400,
           easing: Easing.out(Easing.ease),
           useNativeDriver: true,
         }),
@@ -51,7 +51,7 @@ export default function SplashScreen() {
           router.replace('/log-in');
         }
       });
-    }, 900);
+    }, 1200);
 
     return () => clearTimeout(holdTimer);
   }, [opacity, router, scale]);

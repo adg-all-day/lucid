@@ -29,6 +29,8 @@ export { default as OrderIdIcon } from './OrderIdIcon';
 export { default as StepperChevron } from './StepperChevron';
 export { default as CalendarIcon } from './CalendarIcon';
 export { default as PendingStarIcon } from './PendingStarIcon';
+export { default as ChevronRightSmall } from './ChevronRightSmall';
 export { default as SearchIcon } from './SearchIcon';
 export { default as TimePastIcon } from './TimePastIcon';
+export { default as TimeQuarterIcon } from './TimeQuarterIcon';
 export { default as MailIcon } from './MailIcon';
