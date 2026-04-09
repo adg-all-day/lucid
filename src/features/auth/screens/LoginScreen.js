@@ -60,12 +60,14 @@ export default function LoginScreen() {
             autoCapitalize="none"
             autoFocus
             highlighted
+            labelStyle={styles.blackLabel}
           />
           <AuthField
             control={control}
             name="password"
             label="Password"
             secureTextEntry={!showPassword}
+            labelStyle={styles.blackLabel}
             trailing={
               <Ionicons
                 name={showPassword ? 'eye-outline' : 'eye-off-outline'}
@@ -135,5 +137,8 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontSize: 12,
     fontWeight: '500',
+  },
+  blackLabel: {
+    color: Colors.black,
   },
 });

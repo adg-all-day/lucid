@@ -51,6 +51,7 @@ export default function TwoFactorCodeScreen() {
             autoCapitalize="characters"
             autoFocus
             highlighted
+            labelStyle={styles.blackLabel}
             trailing={<MailIcon size={16} color={Colors.grayMedium} />}
           />
 
@@ -87,8 +88,8 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 13,
     lineHeight: 18,
-    color: '#3A3A3A',
-    fontWeight: '500',
+    color: Colors.black,
+    fontWeight: '700',
     marginBottom: 18,
   },
   errorText: {
@@ -107,12 +108,15 @@ const styles = StyleSheet.create({
   },
   recoveryText: {
     fontSize: 12.5,
-    color: '#2E2E2E',
+    color: Colors.black,
     fontWeight: '500',
   },
   recoveryLink: {
     fontSize: 12.5,
-    color: Colors.primary,
+    color: '#5B5FC7',
     fontWeight: '500',
+  },
+  blackLabel: {
+    color: Colors.black,
   },
 });

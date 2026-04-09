@@ -8,6 +8,7 @@ import {
   TextInput,
   ActivityIndicator,
   RefreshControl,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -30,6 +31,7 @@ export default function TransactionsHomeScreen() {
   const router = useRouter();
   const theme = useTheme();
   const isDark = theme.isDark;
+  const { width: screenWidth } = useWindowDimensions();
   const userName = useUserStore((state) => state.name);
   const userAvatar = useUserStore((state) => state.avatar);
   const activeTab = useUiStore((state) => state.activeTab);
@@ -49,6 +51,7 @@ export default function TransactionsHomeScreen() {
     activeTab,
     searchText,
   );
+  const compactActions = screenWidth < 390;
 
   const stats = {
     all: transactions.length,
@@ -120,14 +123,26 @@ export default function TransactionsHomeScreen() {
                   </TouchableOpacity>
                 ) : null}
               </View>
-              <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardBg }]}>
+              <TouchableOpacity
+                style={[
+                  styles.iconButton,
+                  compactActions && styles.iconButtonCompact,
+                  { backgroundColor: theme.cardBg },
+                ]}
+              >
                 <Ionicons name="filter" size={22} color={theme.iconMuted} />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.cardBg }]}>
+              <TouchableOpacity
+                style={[
+                  styles.iconButton,
+                  compactActions && styles.iconButtonCompact,
+                  { backgroundColor: theme.cardBg },
+                ]}
+              >
                 <Ionicons name="swap-vertical" size={20} color={theme.iconMuted} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.newBtn}
+                style={[styles.newBtn, compactActions && styles.newBtnCompact]}
                 onPress={() => router.push('/new-transaction')}
               >
                 <Text style={styles.newBtnText}>New +</Text>
@@ -241,7 +256,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   searchBar: {
-    width: 202,
+    flex: 1,
+    minWidth: 0,
+    maxWidth: 198,
     flexDirection: 'row',
     alignItems: 'center',
     height: 26,
@@ -274,6 +291,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: Colors.white,
   },
+  iconButtonCompact: {
+    width: 24,
+    height: 24,
+  },
   newBtn: {
     backgroundColor: Colors.primary,
     borderWidth: 2,
@@ -283,7 +304,11 @@ const styles = StyleSheet.create({
     height: 26,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
     marginLeft: 'auto',
+  },
+  newBtnCompact: {
+    width: 61,
   },
   newBtnText: {
     color: Colors.white,

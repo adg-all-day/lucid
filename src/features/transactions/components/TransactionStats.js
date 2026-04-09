@@ -2,8 +2,8 @@
 // Each card shows a count (all transactions, action required, open, closed)
 // with an icon next to it.
 
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import useTheme from '../../../hooks/useTheme';
@@ -43,11 +43,28 @@ const renderIcon = (iconName) => {
 export default function TransactionStats({ stats }) {
   const theme = useTheme();
   const isDark = theme.isDark;
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = useMemo(() => {
+    const horizontalPadding = 24;
+    const gap = 8;
+    const availableWidth = screenWidth - horizontalPadding - gap * (STAT_CARDS.length - 1);
+    const computedWidth = Math.floor(availableWidth / STAT_CARDS.length);
+    return Math.max(76, Math.min(92, computedWidth));
+  }, [screenWidth]);
+
   return (
     <View style={[styles.statsSection, { backgroundColor: theme.primary5 }]}>
       <View style={styles.statsContainer}>
-        {STAT_CARDS.map((item) => (
-          <View key={item.id} style={[styles.statCard, isDark && styles.statCardDark]}>
+        {STAT_CARDS.map((item, index) => (
+          <View
+            key={item.id}
+            style={[
+              styles.statCard,
+              { width: cardWidth },
+              index < STAT_CARDS.length - 1 && styles.statCardGap,
+              isDark && styles.statCardDark,
+            ]}
+          >
             <View style={styles.statTopRow}>
               <View style={styles.statIconArea}>{renderIcon(item.icon)}</View>
               <Text style={styles.statCount}>{stats[item.countKey] || 0}</Text>
@@ -72,14 +89,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
   },
   statCard: {
     backgroundColor: Colors.primary,
     borderRadius: 10,
     padding: 10,
     height: 81,
-    width: 92,
     borderWidth: 1,
     borderColor: Colors.white,
     alignItems: 'center',
@@ -93,6 +109,9 @@ const styles = StyleSheet.create({
   statCardDark: {
     borderWidth: 0,
     borderColor: 'transparent',
+  },
+  statCardGap: {
+    marginRight: 8,
   },
   statTopRow: {
     flexDirection: 'row',

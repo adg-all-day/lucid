@@ -79,24 +79,28 @@ export default function SignUpScreen() {
               name="firstName"
               label="First Name"
               autoCapitalize="words"
+              labelStyle={styles.blackLabel}
             />
             <AuthField
               control={control}
               name="lastName"
               label="Last Name"
               autoCapitalize="words"
+              labelStyle={styles.blackLabel}
             />
             <AuthField
               control={control}
               name="email"
               label="Email"
               icon="at-circle-outline"
+              labelStyle={styles.blackLabel}
             />
             <AuthField
               control={control}
               name="password"
               label="Password"
               secureTextEntry={!showPassword}
+              labelStyle={styles.blackLabel}
               trailing={
                 <Ionicons
                   name={showPassword ? 'eye-outline' : 'eye-off-outline'}
@@ -118,6 +122,7 @@ export default function SignUpScreen() {
               name="repeatPassword"
               label="Retype Password"
               secureTextEntry={!showRepeatPassword}
+              labelStyle={styles.blackLabel}
               trailing={
                 <Ionicons
                   name={showRepeatPassword ? 'eye-outline' : 'eye-off-outline'}
@@ -205,10 +210,14 @@ const styles = StyleSheet.create({
   footerText: {
     color: Colors.black,
     fontSize: 12,
+    fontWeight: '500',
   },
   footerLink: {
     color: Colors.primary,
     fontSize: 12,
     fontWeight: '500',
+  },
+  blackLabel: {
+    color: Colors.black,
   },
 });

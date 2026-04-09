@@ -33,6 +33,7 @@ const METHOD_LABELS = {
   authenticator: { title: 'Authenticator App', description: 'Get one-time codes from your authorised authenticator app' },
   sms: { title: 'SMS or WhatsApp', description: "We'll send a code to the number registered to your account" },
   email: { title: 'Email Address', description: "We'll send a code to email address registered to your account" },
+  recovery_code: { title: 'Recovery Code', description: 'Use one of the recovery codes saved on your device' },
 };
 
 function MethodOption({ title, description, selected, onPress }) {
@@ -83,6 +84,12 @@ export default function TwoFactorMethodScreen() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
+      if (data.method === 'recovery_code') {
+        await challengeMutation.mutateAsync({ session_id: sessionId, method: data.method });
+        router.push('/recovery-code');
+        return;
+      }
+
       await challengeMutation.mutateAsync({ session_id: sessionId, method: data.method });
       router.push('/two-factor-code');
     } catch {
@@ -149,8 +156,8 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 13,
     lineHeight: 18,
-    color: '#3A3A3A',
-    fontWeight: '500',
+    color: Colors.black,
+    fontWeight: '700',
     marginBottom: 18,
   },
   loading: {
@@ -189,14 +196,15 @@ const styles = StyleSheet.create({
   },
   optionTitle: {
     fontSize: 14,
-    color: '#2E2E2E',
+    color: Colors.black,
     fontWeight: '700',
     marginBottom: 2,
   },
   optionDescription: {
     fontSize: 13,
     lineHeight: 18,
-    color: '#525252',
+    color: '#000000',
+    fontWeight: '500',
   },
   errorText: {
     color: Colors.error,

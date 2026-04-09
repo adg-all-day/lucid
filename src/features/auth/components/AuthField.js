@@ -18,12 +18,13 @@ export default function AuthField({
   autoFocus = false,
   highlighted = false,
   trailingContainerStyle,
+  labelStyle,
 }) {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, labelStyle]}>{label}</Text>
       <Controller
         control={control}
         name={name}

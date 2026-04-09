@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
+  Alert,
   View,
   StyleSheet,
   ScrollView,
@@ -33,7 +34,12 @@ import {
   VerticalDotsIcon,
 } from '../../../icons';
 import useUserStore from '../../../stores/userStore';
-import { useTransaction, useTransactionHistory, useSettlementStatement } from '../../../api/queries/transactions';
+import {
+  useTransaction,
+  useTransactionHistory,
+  useSettlementStatement,
+  useResendCounterpartyEmail,
+} from '../../../api/queries/transactions';
 import SettlementStatementModal from '../components/SettlementStatementModal';
 import TransactionHistoryModal from '../components/TransactionHistoryModal';
 import { TimeQuarterIcon } from '../../../icons';
@@ -79,6 +85,7 @@ export default function TransactionDetailScreen() {
   const transactionQuery = useTransaction(id);
   const statementQuery = useSettlementStatement(id);
   const historyQuery = useTransactionHistory(id);
+  const resendCounterpartyEmail = useResendCounterpartyEmail();
   const transaction = transactionQuery.data;
 
   const stepData = useMemo(() => {
@@ -281,9 +288,33 @@ export default function TransactionDetailScreen() {
                   <View style={styles.cpBottomRow}>
                     <Text style={[styles.cpEmail, { color: theme.text }]} numberOfLines={1}>{cp.email}</Text>
                     {cp.next_required_action && (
-                      <TouchableOpacity style={styles.nudgeBtn}>
-                        <NudgeIcon size={14} color={theme.icon} />
-                        <Text style={styles.nudgeBtnText}> Nudge</Text>
+                      <TouchableOpacity
+                        style={styles.nudgeBtn}
+                        disabled={resendCounterpartyEmail.isPending}
+                        onPress={async () => {
+                          try {
+                            const result = await resendCounterpartyEmail.mutateAsync({
+                              transactionId: transaction.id,
+                              counterpartyId: cp.id,
+                            });
+                            const message =
+                              result?.message ||
+                              result?.data?.message ||
+                              'Reminder email sent successfully.';
+                            Alert.alert('Nudge Sent', message);
+                          } catch (error) {
+                            Alert.alert(
+                              'Failed to Send Nudge',
+                              error?.response?.data?.error ||
+                                error?.response?.data?.message ||
+                                error?.message ||
+                                'Unable to send reminder email.',
+                            );
+                          }
+                        }}
+                      >
+                        <NudgeIcon size={14} color={Colors.white} />
+                        <Text style={styles.nudgeBtnText}>Nudge</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -799,10 +830,13 @@ const styles = StyleSheet.create({
   nudgeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: Colors.primary,
     borderRadius: 5,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    width: 86,
+    height: 25,
+    paddingLeft: 7,
+    paddingRight: 9,
   },
   nudgeBtnText: {
     fontSize: 13,

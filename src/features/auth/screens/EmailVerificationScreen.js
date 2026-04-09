@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
   sentText: {
     fontSize: 13,
     color: Colors.black,
+    fontWeight: '500',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -90,6 +91,7 @@ const styles = StyleSheet.create({
   instructionText: {
     fontSize: 13,
     color: Colors.black,
+    fontWeight: '500',
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 20,

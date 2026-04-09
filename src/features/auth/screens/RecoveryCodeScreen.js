@@ -51,6 +51,7 @@ export default function RecoveryCodeScreen() {
             autoCapitalize="characters"
             autoFocus
             highlighted
+            labelStyle={styles.blackLabel}
           />
 
           {recoveryMutation.error ? (
@@ -79,8 +80,8 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 13,
     lineHeight: 18,
-    color: '#3A3A3A',
-    fontWeight: '500',
+    color: Colors.black,
+    fontWeight: '700',
     marginBottom: 18,
   },
   errorText: {
@@ -91,5 +92,8 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 2,
+  },
+  blackLabel: {
+    color: Colors.black,
   },
 });

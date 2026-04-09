@@ -85,11 +85,13 @@ const styles = StyleSheet.create({
   instruction: {
     fontSize: 14,
     color: Colors.black,
+    fontWeight: '500',
     marginBottom: 16,
   },
   helperText: {
     fontSize: 14,
     color: '#212121',
+    fontWeight: '500',
     marginTop: -4,
     marginBottom: 20,
   },

@@ -33,7 +33,7 @@ export const passwordChangeSchema = z
   });
 
 export const twoFactorMethodSchema = z.object({
-  method: z.enum(['authenticator', 'sms', 'email']),
+  method: z.enum(['authenticator', 'sms', 'email', 'recovery_code']),
 });
 
 export const twoFactorCodeSchema = z.object({

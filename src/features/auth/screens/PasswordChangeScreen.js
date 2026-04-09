@@ -198,6 +198,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: Colors.error,
     fontSize: 12,
+    fontWeight: '500',
     marginBottom: 8,
     textAlign: 'center',
   },

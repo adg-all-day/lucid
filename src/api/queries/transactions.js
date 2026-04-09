@@ -65,6 +65,18 @@ export function useSettlementStatement(id) {
   });
 }
 
+// ── Resend counterparty email ("Nudge") ─────────────────────────────
+export function useResendCounterpartyEmail() {
+  return useMutation({
+    mutationFn: async ({ transactionId, counterpartyId }) => {
+      const res = await client.post(
+        `/transactions/${transactionId}/counterparties/${counterpartyId}/resend-email`,
+      );
+      return extractPayload(res) ?? res;
+    },
+  });
+}
+
 // ── Create transaction ───────────────────────────────────────────────
 export function useCreateTransaction() {
   const queryClient = useQueryClient();
