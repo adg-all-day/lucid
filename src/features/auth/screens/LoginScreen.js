@@ -13,9 +13,11 @@ import { loginSchema } from '../schemas/auth.schema';
 import { useLogin } from '../../../api/queries/auth';
 import useAuthStore from '../../../stores/authStore';
 import getApiErrorMessage from '../utils/getApiErrorMessage';
+import useTheme from '../../../hooks/useTheme';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLogin();
   const { control, handleSubmit } = useForm({
@@ -60,19 +62,17 @@ export default function LoginScreen() {
             autoCapitalize="none"
             autoFocus
             highlighted
-            labelStyle={styles.blackLabel}
           />
           <AuthField
             control={control}
             name="password"
             label="Password"
             secureTextEntry={!showPassword}
-            labelStyle={styles.blackLabel}
             trailing={
               <Ionicons
                 name={showPassword ? 'eye-outline' : 'eye-off-outline'}
                 size={18}
-                color={Colors.grayMedium}
+                color={theme.iconMuted}
                 onPress={() => setShowPassword((value) => !value)}
               />
             }
@@ -91,7 +91,7 @@ export default function LoginScreen() {
           <AuthPrimaryButton title="Login" onPress={onSubmit} loading={loginMutation.isPending} />
 
           <View style={styles.footerRow}>
-            <Text style={styles.footerText}>Not yet registered? </Text>
+            <Text style={[styles.footerText, { color: theme.text }]}>Not yet registered? </Text>
             <Pressable onPress={() => router.push('/sign-up')}>
               <Text style={styles.footerLink}>Sign Up</Text>
             </Pressable>
@@ -130,15 +130,11 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   footerText: {
-    color: Colors.black,
     fontSize: 12,
   },
   footerLink: {
     color: Colors.primary,
     fontSize: 12,
     fontWeight: '500',
-  },
-  blackLabel: {
-    color: Colors.black,
   },
 });

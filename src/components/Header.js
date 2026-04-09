@@ -10,7 +10,6 @@ import Colors from '../constants/colors';
 import Text from './StyledText';
 import useAuthStore from '../stores/authStore';
 import useUserStore from '../stores/userStore';
-import useUiStore from '../stores/uiStore';
 import queryClient from '../api/queryClient';
 import { useLogout } from '../api/queries/auth';
 import useTheme from '../hooks/useTheme';
@@ -18,8 +17,6 @@ import useTheme from '../hooks/useTheme';
 export default function Header({ name, avatarUri }) {
   const router = useRouter();
   const logoutMutation = useLogout();
-  const darkMode = useUiStore((s) => s.darkMode);
-  const toggleDarkMode = useUiStore((s) => s.toggleDarkMode);
   const theme = useTheme();
   const [showMenu, setShowMenu] = useState(false);
 
@@ -53,14 +50,6 @@ export default function Header({ name, avatarUri }) {
 
           {showMenu ? (
             <View style={styles.menuRow}>
-              <TouchableOpacity style={styles.menuBtn} onPress={toggleDarkMode} activeOpacity={0.8}>
-                <Ionicons
-                  name={darkMode ? 'sunny-outline' : 'moon-outline'}
-                  size={14}
-                  color={Colors.white}
-                />
-                <Text style={styles.menuText}>{darkMode ? 'Light' : 'Dark'}</Text>
-              </TouchableOpacity>
               <TouchableOpacity style={styles.menuBtn} onPress={handleLogout} activeOpacity={0.8}>
                 <Ionicons name="log-out-outline" size={14} color={Colors.white} />
                 <Text style={styles.menuText}>Log out</Text>

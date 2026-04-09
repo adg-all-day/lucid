@@ -5,10 +5,8 @@ import { create } from 'zustand';
 const useUiStore = create((set) => ({
   activeTab: 'All Transactions',
   searchText: '',
-  darkMode: false,
   setActiveTab: (tab) => set({ activeTab: tab }),
   setSearchText: (searchText) => set({ searchText }),
-  toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
 }));
 
 export default useUiStore;

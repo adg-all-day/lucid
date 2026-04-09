@@ -6,9 +6,11 @@ import AuthShell from '../components/AuthShell';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import { useVerifyEmail } from '../../../api/queries/auth';
+import useTheme from '../../../hooks/useTheme';
 
 export default function VerifyEmailResultScreen({ token }) {
   const router = useRouter();
+  const theme = useTheme();
   const verifyMutation = useVerifyEmail();
 
   useEffect(() => {
@@ -26,8 +28,8 @@ export default function VerifyEmailResultScreen({ token }) {
         {!token ? (
           <>
             <Ionicons name="close-circle" size={48} color={Colors.error} />
-            <Text style={styles.heading}>Invalid Link</Text>
-            <Text style={styles.message}>This verification link is invalid.</Text>
+            <Text style={[styles.heading, { color: theme.text }]}>Invalid Link</Text>
+            <Text style={[styles.message, { color: theme.text }]}>This verification link is invalid.</Text>
             <Pressable style={styles.button} onPress={goToLogin}>
               <Text style={styles.buttonText}>Go to Login</Text>
             </Pressable>
@@ -35,13 +37,13 @@ export default function VerifyEmailResultScreen({ token }) {
         ) : verifyMutation.isPending ? (
           <>
             <ActivityIndicator size="large" color={Colors.primary} />
-            <Text style={styles.heading}>Verifying your email...</Text>
+            <Text style={[styles.heading, { color: theme.text }]}>Verifying your email...</Text>
           </>
         ) : verifyMutation.isSuccess ? (
           <>
             <Ionicons name="checkmark-circle" size={48} color="#059669" />
-            <Text style={styles.heading}>Email Verified</Text>
-            <Text style={styles.message}>Your email has been verified successfully. You can now log in.</Text>
+            <Text style={[styles.heading, { color: theme.text }]}>Email Verified</Text>
+            <Text style={[styles.message, { color: theme.text }]}>Your email has been verified successfully. You can now log in.</Text>
             <Pressable style={styles.button} onPress={goToLogin}>
               <Text style={styles.buttonText}>Go to Login</Text>
             </Pressable>
@@ -49,8 +51,8 @@ export default function VerifyEmailResultScreen({ token }) {
         ) : verifyMutation.isError ? (
           <>
             <Ionicons name="close-circle" size={48} color={Colors.error} />
-            <Text style={styles.heading}>Verification Failed</Text>
-            <Text style={styles.message}>
+            <Text style={[styles.heading, { color: theme.text }]}>Verification Failed</Text>
+            <Text style={[styles.message, { color: theme.text }]}>
               {verifyMutation.error?.response?.data?.message || 'This link may be invalid or expired. Please request a new verification email.'}
             </Text>
             <Pressable style={styles.button} onPress={goToLogin}>
@@ -73,11 +75,9 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 16,
     fontWeight: '700',
-    color: Colors.black,
   },
   message: {
     fontSize: 13,
-    color: Colors.black,
     textAlign: 'center',
     lineHeight: 20,
   },

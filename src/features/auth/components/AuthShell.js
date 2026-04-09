@@ -4,18 +4,34 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Text from '../../../components/StyledText';
 import LucidLogo from '../../../icons/LucidLogo';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 
 export default function AuthShell({ title, children, cardStyle }) {
+  const theme = useTheme();
+
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-      <View style={styles.headerBand}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: theme.headerBg }]} edges={['top', 'left', 'right']}>
+      <View style={[styles.headerBand, { backgroundColor: theme.headerBg }]}>
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
-          <LucidLogo size={22} />
+          <LucidLogo size={22} color={theme.logoColor} accentColor={theme.logoAccent} />
         </View>
       </View>
-      <View style={styles.content}>
-        <View style={[styles.card, cardStyle]}>{children}</View>
+      <View style={[styles.content, { backgroundColor: theme.background }]}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.modalBg,
+              borderColor: theme.isDark ? theme.divider : 'transparent',
+              shadowOpacity: theme.isDark ? 0 : 0.05,
+              elevation: theme.isDark ? 0 : 1,
+            },
+            cardStyle,
+          ]}
+        >
+          {children}
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -24,10 +40,8 @@ export default function AuthShell({ title, children, cardStyle }) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Colors.primary,
   },
   headerBand: {
-    backgroundColor: Colors.primary,
   },
   header: {
     height: 70,
@@ -45,18 +59,15 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    backgroundColor: '#F7F7F7',
     paddingHorizontal: 8,
     paddingTop: 15,
   },
   card: {
-    backgroundColor: Colors.white,
     borderRadius: 9,
     padding: 12,
+    borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
     shadowRadius: 2,
-    elevation: 1,
   },
 });

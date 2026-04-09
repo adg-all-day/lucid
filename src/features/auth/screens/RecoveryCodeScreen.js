@@ -11,9 +11,11 @@ import Colors from '../../../constants/colors';
 import { recoveryCodeSchema } from '../schemas/auth.schema';
 import { useVerify2FA } from '../../../api/queries/auth';
 import useAuthStore from '../../../stores/authStore';
+import useTheme from '../../../hooks/useTheme';
 
 export default function RecoveryCodeScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const sessionId = useAuthStore((state) => state.sessionId);
   const recoveryMutation = useVerify2FA();
   const { control, handleSubmit } = useForm({
@@ -39,7 +41,7 @@ export default function RecoveryCodeScreen() {
         style={styles.flex}
       >
         <View style={styles.form}>
-          <Text style={styles.heading}>
+          <Text style={[styles.heading, { color: theme.text }]}>
             Paste the recovery code saved on your device
           </Text>
 
@@ -51,7 +53,6 @@ export default function RecoveryCodeScreen() {
             autoCapitalize="characters"
             autoFocus
             highlighted
-            labelStyle={styles.blackLabel}
           />
 
           {recoveryMutation.error ? (
@@ -80,7 +81,6 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 13,
     lineHeight: 18,
-    color: Colors.black,
     fontWeight: '700',
     marginBottom: 18,
   },
@@ -92,8 +92,5 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 2,
-  },
-  blackLabel: {
-    color: Colors.black,
   },
 });

@@ -11,8 +11,11 @@ import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import { passwordChecks, passwordChangeSchema } from '../schemas/auth.schema';
 import { useSetPassword, useVerifyResetToken } from '../../../api/queries/auth';
+import useTheme from '../../../hooks/useTheme';
 
 function PasswordRule({ label, passed }) {
+  const theme = useTheme();
+
   return (
     <View style={styles.ruleRow}>
       <Ionicons
@@ -20,13 +23,14 @@ function PasswordRule({ label, passed }) {
         size={16}
         color={passed ? '#059669' : '#A0A0A0'}
       />
-      <Text style={[styles.ruleText, passed && styles.ruleTextPassed]}>{label}</Text>
+      <Text style={[styles.ruleText, { color: passed ? '#059669' : theme.textSecondary }]}>{label}</Text>
     </View>
   );
 }
 
 export default function PasswordChangeScreen({ resetToken }) {
   const router = useRouter();
+  const theme = useTheme();
   const verifyTokenMutation = useVerifyResetToken();
   const setPasswordMutation = useSetPassword();
   const [showPassword, setShowPassword] = useState(false);
@@ -100,7 +104,7 @@ export default function PasswordChangeScreen({ resetToken }) {
                 <Ionicons
                   name={showPassword ? 'eye-outline' : 'eye-off-outline'}
                   size={18}
-                  color={Colors.grayMedium}
+                  color={theme.iconMuted}
                   onPress={() => setShowPassword((value) => !value)}
                 />
               }
@@ -121,7 +125,7 @@ export default function PasswordChangeScreen({ resetToken }) {
                 <Ionicons
                   name={showRepeatPassword ? 'eye-outline' : 'eye-off-outline'}
                   size={18}
-                  color={Colors.grayMedium}
+                  color={theme.iconMuted}
                   onPress={() => setShowRepeatPassword((value) => !value)}
                 />
               }
@@ -174,10 +178,6 @@ const styles = StyleSheet.create({
   ruleText: {
     marginLeft: 7,
     fontSize: 11.5,
-    color: '#A0A0A0',
-  },
-  ruleTextPassed: {
-    color: '#059669',
   },
   missingTokenContent: {
     alignItems: 'center',

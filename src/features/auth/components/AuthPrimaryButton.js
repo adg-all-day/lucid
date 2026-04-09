@@ -2,10 +2,12 @@ import React, { useRef } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet } from 'react-native';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 
 export default function AuthPrimaryButton({ title, onPress, style, textStyle, loading = false, disabled = false }) {
   const scale = useRef(new Animated.Value(1)).current;
   const translateY = useRef(new Animated.Value(0)).current;
+  const theme = useTheme();
 
   const animateTo = (toScale, toTranslateY) => {
     Animated.parallel([
@@ -33,6 +35,7 @@ export default function AuthPrimaryButton({ title, onPress, style, textStyle, lo
       <Animated.View
         style={[
           styles.button,
+          { backgroundColor: theme.actionButtonBg },
           style,
           (disabled || loading) && styles.buttonDisabled,
           {
@@ -43,7 +46,7 @@ export default function AuthPrimaryButton({ title, onPress, style, textStyle, lo
         {loading ? (
           <ActivityIndicator color={Colors.white} size="small" />
         ) : (
-          <Text style={[styles.text, textStyle]}>{title}</Text>
+          <Text style={[styles.text, { color: theme.actionButtonText }, textStyle]}>{title}</Text>
         )}
       </Animated.View>
     </Pressable>
@@ -53,7 +56,6 @@ export default function AuthPrimaryButton({ title, onPress, style, textStyle, lo
 const styles = StyleSheet.create({
   button: {
     height: 42,
-    backgroundColor: Colors.primary,
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',

@@ -4,6 +4,7 @@ import { Controller } from 'react-hook-form';
 import { Ionicons } from '@expo/vector-icons';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
+import useTheme from '../../../hooks/useTheme';
 
 export default function AuthField({
   control,
@@ -21,10 +22,11 @@ export default function AuthField({
   labelStyle,
 }) {
   const [isFocused, setIsFocused] = useState(false);
+  const theme = useTheme();
 
   return (
     <View style={styles.field}>
-      <Text style={[styles.label, labelStyle]}>{label}</Text>
+      <Text style={[styles.label, { color: theme.text }, labelStyle]}>{label}</Text>
       <Controller
         control={control}
         name={name}
@@ -32,12 +34,17 @@ export default function AuthField({
           <View
             style={[
               styles.inputWrap,
+              {
+                borderColor: theme.isDark ? 'rgba(255,255,255,0.2)' : '#E3E3E3',
+                backgroundColor: theme.inputBg,
+              },
               (value?.length > 0) && styles.inputWrapFilled,
               isFocused && styles.inputWrapActive,
+              isFocused && !theme.isDark && styles.inputWrapActiveShadow,
             ]}
           >
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: theme.text }]}
               value={value}
               onChangeText={onChange}
               onBlur={() => {
@@ -46,7 +53,7 @@ export default function AuthField({
               }}
               onFocus={() => setIsFocused(true)}
               placeholder={placeholder}
-              placeholderTextColor={Colors.grayMedium}
+              placeholderTextColor={theme.textSecondary}
               secureTextEntry={secureTextEntry}
               keyboardType={keyboardType}
               autoCapitalize={autoCapitalize}
@@ -55,7 +62,7 @@ export default function AuthField({
             />
             {icon ? (
               <View style={styles.iconWrap}>
-                <Ionicons name={icon} size={18} color={Colors.grayMedium} />
+                <Ionicons name={icon} size={18} color={theme.iconMuted} />
               </View>
             ) : null}
             {trailing ? (
@@ -74,7 +81,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    color: '#4F4F4F',
     marginBottom: 8,
     fontWeight: '500',
   },
@@ -92,12 +98,13 @@ const styles = StyleSheet.create({
   },
   inputWrapActive: {
     borderColor: Colors.primary,
+  },
+  inputWrapActiveShadow: {
     boxShadow: '0px 0px 5px 0px #2375C1CC',
   },
   input: {
     flex: 1,
     fontSize: 13,
-    color: Colors.black,
     paddingHorizontal: 12,
     paddingVertical: 0,
     height: '100%',

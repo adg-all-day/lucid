@@ -3,13 +3,14 @@ import { Animated, Easing, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LucidLogo from '../../../icons/LucidLogo';
-import Colors from '../../../constants/colors';
 import useAuthStore from '../../../stores/authStore';
 import useUserStore from '../../../stores/userStore';
 import client from '../../../api/client';
+import useTheme from '../../../hooks/useTheme';
 
 export default function SplashScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const opacity = useRef(new Animated.Value(1)).current;
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -57,7 +58,7 @@ export default function SplashScreen() {
   }, [opacity, router, scale]);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: theme.headerBg }]}>
       <Animated.View
         style={[
           styles.center,
@@ -67,7 +68,7 @@ export default function SplashScreen() {
           },
         ]}
       >
-        <LucidLogo size={68} />
+        <LucidLogo size={68} color={theme.logoColor} accentColor={theme.logoAccent} />
       </Animated.View>
     </SafeAreaView>
   );
@@ -76,7 +77,6 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Colors.primary,
   },
   center: {
     flex: 1,

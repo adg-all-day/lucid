@@ -12,9 +12,11 @@ import MailIcon from '../../../icons/MailIcon';
 import { twoFactorCodeSchema } from '../schemas/auth.schema';
 import { useVerify2FA } from '../../../api/queries/auth';
 import useAuthStore from '../../../stores/authStore';
+import useTheme from '../../../hooks/useTheme';
 
 export default function TwoFactorCodeScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const sessionId = useAuthStore((state) => state.sessionId);
   const verify2FAMutation = useVerify2FA();
   const { control, handleSubmit } = useForm({
@@ -40,7 +42,7 @@ export default function TwoFactorCodeScreen() {
         style={styles.flex}
       >
         <View style={styles.form}>
-          <Text style={styles.heading}>
+          <Text style={[styles.heading, { color: theme.text }]}>
             Enter the code from your preferred authentication method
           </Text>
 
@@ -51,8 +53,7 @@ export default function TwoFactorCodeScreen() {
             autoCapitalize="characters"
             autoFocus
             highlighted
-            labelStyle={styles.blackLabel}
-            trailing={<MailIcon size={16} color={Colors.grayMedium} />}
+            trailing={<MailIcon size={16} color={theme.iconMuted} />}
           />
 
           {verify2FAMutation.error ? (
@@ -64,7 +65,7 @@ export default function TwoFactorCodeScreen() {
           <AuthPrimaryButton title="Login" onPress={onSubmit} loading={verify2FAMutation.isPending} style={styles.button} />
 
           <View style={styles.recoveryRow}>
-            <Text style={styles.recoveryText}>Can&apos;t access your verification methods? </Text>
+            <Text style={[styles.recoveryText, { color: theme.text }]}>Can&apos;t access your verification methods? </Text>
             <Pressable onPress={() => router.push('/recovery-code')}>
               <Text style={styles.recoveryLink}>Use Recovery Code</Text>
             </Pressable>
@@ -88,7 +89,6 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 13,
     lineHeight: 18,
-    color: Colors.black,
     fontWeight: '700',
     marginBottom: 18,
   },
@@ -108,15 +108,11 @@ const styles = StyleSheet.create({
   },
   recoveryText: {
     fontSize: 12.5,
-    color: Colors.black,
     fontWeight: '500',
   },
   recoveryLink: {
-    fontSize: 12.5,
     color: '#5B5FC7',
+    fontSize: 12.5,
     fontWeight: '500',
-  },
-  blackLabel: {
-    color: Colors.black,
   },
 });

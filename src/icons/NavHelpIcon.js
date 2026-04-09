@@ -1,7 +1,22 @@
 import React from 'react';
 import Svg, { Path, G, Defs, ClipPath, Rect } from 'react-native-svg';
 
-export default function NavHelpIcon({ size = 24, color = '#FFFFFF' }) {
+export default function NavHelpIcon({ size = 24, color = '#FFFFFF', focused = false }) {
+  if (focused) {
+    return (
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <G clipPath="url(#clip0_5962_5791)">
+          <Path d="M20 0H4C1.794 0 0 1.794 0 4V16C0 18.206 1.794 20 4 20H6.923L10.672 23.156C11.054 23.496 11.533 23.665 12.009 23.664C12.477 23.664 12.94 23.502 13.301 23.18L17.148 20H20.001C22.207 20 24.001 18.206 24.001 16V4C24.001 1.794 22.206 0 20 0ZM12 18C11.172 18 10.5 17.328 10.5 16.5C10.5 15.672 11.172 15 12 15C12.828 15 13.5 15.672 13.5 16.5C13.5 17.328 12.828 18 12 18ZM13.679 11.631C13.44 11.742 13 12.271 13 12.8V13C13 13.553 12.553 14 12 14C11.447 14 11 13.553 11 13V12.8C11 11.416 11.947 10.23 12.838 9.817C13.57 9.478 14.223 8.593 13.929 7.452C13.759 6.796 13.205 6.242 12.55 6.073C11.907 5.904 11.279 6.03 10.778 6.418C10.284 6.801 10.001 7.378 10.001 8.001C10.001 8.554 9.554 9.001 9.001 9.001C8.448 9.001 8.001 8.554 8.001 8.001C8.001 6.754 8.566 5.601 9.554 4.837C10.54 4.071 11.816 3.815 13.051 4.137C14.409 4.487 15.515 5.592 15.865 6.952C16.355 8.85 15.436 10.819 13.679 11.632V11.631Z" fill={color}/>
+        </G>
+        <Defs>
+          <ClipPath id="clip0_5962_5791">
+            <Rect width="24" height="24" fill="white" />
+          </ClipPath>
+        </Defs>
+      </Svg>
+    );
+  }
+
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <G clipPath="url(#clip0)">

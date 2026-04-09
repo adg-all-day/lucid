@@ -10,9 +10,12 @@ import NavHeadsetIcon from '../../src/icons/NavHeadsetIcon';
 import NavSettingsIcon from '../../src/icons/NavSettingsIcon';
 import Text from '../../src/components/StyledText';
 import Colors from '../../src/constants/colors';
+import useTheme from '../../src/hooks/useTheme';
 
 export default function TabLayout() {
   const segments = useSegments();
+  const theme = useTheme();
+  const isDark = theme.isDark;
 
   // figure out if we're deep inside the home tab (like on a transaction page)
   // so we can dim the Home icon when the user isn't really on the main home screen
@@ -30,7 +33,7 @@ export default function TabLayout() {
           paddingTop: 8,
           paddingBottom: 42,
           borderTopWidth: 0,
-          backgroundColor: Colors.primary,
+          backgroundColor: isDark ? '#212121' : Colors.primary,
         },
       }}
     >
@@ -40,9 +43,10 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => {
             // if we navigated to transaction detail, home shouldn't glow
             const isActuallyFocused = focused && !isOnTransactionDetail;
+            const iconColor = isDark && isActuallyFocused ? Colors.primary : '#FFFFFF';
             return (
               <View style={{ alignItems: 'center' }}>
-                <NavHomeIcon size={24} color="#FFFFFF" focused={isActuallyFocused} />
+                <NavHomeIcon size={24} color={iconColor} focused={isActuallyFocused} />
               </View>
             );
           },
@@ -53,7 +57,7 @@ export default function TabLayout() {
                 <Text
                   style={{
                     fontSize: 12,
-                    color: Colors.white,
+                    color: isDark && isActuallyFocused ? Colors.primary : Colors.white,
                     fontFamily: isActuallyFocused ? 'Satoshi-Bold' : 'Satoshi-Regular',
                     marginTop: 2,
                   }}
@@ -65,7 +69,13 @@ export default function TabLayout() {
                     width: 32,
                     height: 3,
                     borderRadius: 1.5,
-                    backgroundColor: isActuallyFocused ? Colors.grayBg : Colors.primary,
+                    backgroundColor: isActuallyFocused
+                      ? isDark
+                        ? Colors.primary
+                        : Colors.grayBg
+                      : isDark
+                        ? '#212121'
+                        : Colors.primary,
                     marginTop: 4,
                   }}
                 />
@@ -79,7 +89,7 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }) => (
             <View style={{ alignItems: 'center' }}>
-              <NavHelpIcon size={24} color="#FFFFFF" focused={focused} />
+              <NavHelpIcon size={24} color={isDark && focused ? Colors.primary : '#FFFFFF'} focused={focused} />
             </View>
           ),
           tabBarLabel: ({ focused }) => (
@@ -87,7 +97,7 @@ export default function TabLayout() {
               <Text
                 style={{
                   fontSize: 12,
-                  color: Colors.white,
+                  color: isDark && focused ? Colors.primary : Colors.white,
                   fontFamily: focused ? 'Satoshi-Bold' : 'Satoshi-Regular',
                   marginTop: 2,
                 }}
@@ -99,7 +109,13 @@ export default function TabLayout() {
                   width: 32,
                   height: 3,
                   borderRadius: 1.5,
-                  backgroundColor: focused ? Colors.grayBg : Colors.primary,
+                  backgroundColor: focused
+                    ? isDark
+                      ? Colors.primary
+                      : Colors.grayBg
+                    : isDark
+                      ? '#212121'
+                      : Colors.primary,
                   marginTop: 4,
                 }}
               />
@@ -112,7 +128,7 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }) => (
             <View style={{ alignItems: 'center' }}>
-              <NavHeadsetIcon size={24} color="#FFFFFF" focused={focused} />
+              <NavHeadsetIcon size={24} color={isDark && focused ? Colors.primary : '#FFFFFF'} focused={focused} />
             </View>
           ),
           tabBarLabel: ({ focused }) => (
@@ -120,7 +136,7 @@ export default function TabLayout() {
               <Text
                 style={{
                   fontSize: 12,
-                  color: Colors.white,
+                  color: isDark && focused ? Colors.primary : Colors.white,
                   fontFamily: focused ? 'Satoshi-Bold' : 'Satoshi-Regular',
                   marginTop: 2,
                 }}
@@ -132,7 +148,13 @@ export default function TabLayout() {
                   width: 32,
                   height: 3,
                   borderRadius: 1.5,
-                  backgroundColor: focused ? Colors.grayBg : Colors.primary,
+                  backgroundColor: focused
+                    ? isDark
+                      ? Colors.primary
+                      : Colors.grayBg
+                    : isDark
+                      ? '#212121'
+                      : Colors.primary,
                   marginTop: 4,
                 }}
               />
@@ -145,7 +167,7 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }) => (
             <View style={{ alignItems: 'center' }}>
-              <NavSettingsIcon size={24} color="#FFFFFF" focused={focused} />
+              <NavSettingsIcon size={24} color={isDark && focused ? Colors.primary : '#FFFFFF'} focused={focused} />
             </View>
           ),
           tabBarLabel: ({ focused }) => (
@@ -153,7 +175,7 @@ export default function TabLayout() {
               <Text
                 style={{
                   fontSize: 12,
-                  color: Colors.white,
+                  color: isDark && focused ? Colors.primary : Colors.white,
                   fontFamily: focused ? 'Satoshi-Bold' : 'Satoshi-Regular',
                   marginTop: 2,
                 }}
@@ -165,7 +187,13 @@ export default function TabLayout() {
                   width: 32,
                   height: 3,
                   borderRadius: 1.5,
-                  backgroundColor: focused ? Colors.grayBg : Colors.primary,
+                  backgroundColor: focused
+                    ? isDark
+                      ? Colors.primary
+                      : Colors.grayBg
+                    : isDark
+                      ? '#212121'
+                      : Colors.primary,
                   marginTop: 4,
                 }}
               />

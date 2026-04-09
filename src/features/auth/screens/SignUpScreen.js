@@ -11,8 +11,11 @@ import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import { passwordChecks, signUpSchema } from '../schemas/auth.schema';
 import { useRegister } from '../../../api/queries/auth';
+import useTheme from '../../../hooks/useTheme';
 
 function PasswordRule({ label, passed }) {
+  const theme = useTheme();
+
   return (
     <View style={styles.ruleRow}>
       <Ionicons
@@ -20,13 +23,14 @@ function PasswordRule({ label, passed }) {
         size={16}
         color={passed ? '#059669' : '#A0A0A0'}
       />
-      <Text style={[styles.ruleText, passed && styles.ruleTextPassed]}>{label}</Text>
+      <Text style={[styles.ruleText, { color: passed ? '#059669' : theme.textSecondary }]}>{label}</Text>
     </View>
   );
 }
 
 export default function SignUpScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const registerMutation = useRegister();
@@ -79,33 +83,29 @@ export default function SignUpScreen() {
               name="firstName"
               label="First Name"
               autoCapitalize="words"
-              labelStyle={styles.blackLabel}
             />
             <AuthField
               control={control}
               name="lastName"
               label="Last Name"
               autoCapitalize="words"
-              labelStyle={styles.blackLabel}
             />
             <AuthField
               control={control}
               name="email"
               label="Email"
               icon="at-circle-outline"
-              labelStyle={styles.blackLabel}
             />
             <AuthField
               control={control}
               name="password"
               label="Password"
               secureTextEntry={!showPassword}
-              labelStyle={styles.blackLabel}
               trailing={
                 <Ionicons
                   name={showPassword ? 'eye-outline' : 'eye-off-outline'}
                   size={18}
-                  color={Colors.grayMedium}
+                  color={theme.iconMuted}
                   onPress={() => setShowPassword((value) => !value)}
                 />
               }
@@ -122,12 +122,11 @@ export default function SignUpScreen() {
               name="repeatPassword"
               label="Retype Password"
               secureTextEntry={!showRepeatPassword}
-              labelStyle={styles.blackLabel}
               trailing={
                 <Ionicons
                   name={showRepeatPassword ? 'eye-outline' : 'eye-off-outline'}
                   size={18}
-                  color={Colors.grayMedium}
+                  color={theme.iconMuted}
                   onPress={() => setShowRepeatPassword((value) => !value)}
                 />
               }
@@ -142,7 +141,7 @@ export default function SignUpScreen() {
             <AuthPrimaryButton title="Sign up" onPress={onSubmit} loading={registerMutation.isPending} style={styles.primaryButton} />
 
             <View style={styles.footerRow}>
-              <Text style={styles.footerText}>Have an account? </Text>
+              <Text style={[styles.footerText, { color: theme.text }]}>Have an account? </Text>
               <Pressable onPress={() => router.push('/log-in')}>
                 <Text style={styles.footerLink}>Log In</Text>
               </Pressable>
@@ -179,10 +178,6 @@ const styles = StyleSheet.create({
   ruleText: {
     marginLeft: 7,
     fontSize: 11.5,
-    color: '#A0A0A0',
-  },
-  ruleTextPassed: {
-    color: '#059669',
   },
   repeatTrailing: {
     flexDirection: 'row',
@@ -208,7 +203,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   footerText: {
-    color: Colors.black,
     fontSize: 12,
     fontWeight: '500',
   },
@@ -216,8 +210,5 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontSize: 12,
     fontWeight: '500',
-  },
-  blackLabel: {
-    color: Colors.black,
   },
 });

@@ -4,34 +4,19 @@ import {
   View,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import Text from '../../../components/StyledText';
 import Header from '../../../components/Header';
 import Colors from '../../../constants/colors';
 import useTheme from '../../../hooks/useTheme';
 import {
-  ActionRequiredIcon,
-  AwaitingDeliveryIcon,
-  AvatarIcon,
-  CalendarIcon,
-  EyeCrossedIcon,
-  EyeOpenIcon,
-  ExclamationIcon,
-  NudgeIcon,
-  OrderIdIcon,
-  PendingStarIcon,
   StepAcceptanceIcon,
   StepAgreementIcon,
   StepDeliveryIcon,
   StepDisbursementIcon,
   StepEscrowIcon,
-  StepperChevron,
-  ChevronRightSmall,
-  VerticalDotsIcon,
 } from '../../../icons';
 import useUserStore from '../../../stores/userStore';
 import {
@@ -42,14 +27,13 @@ import {
 } from '../../../api/queries/transactions';
 import SettlementStatementModal from '../components/SettlementStatementModal';
 import TransactionHistoryModal from '../components/TransactionHistoryModal';
-import { TimeQuarterIcon } from '../../../icons';
-import {
-  formatActionLabel,
-  formatAmount,
-  formatDate,
-  formatType,
-  getStatusLabel,
-} from '../utils/formatters';
+import TransactionSummarySection from '../components/TransactionSummarySection';
+import TransactionStatusSection from '../components/TransactionStatusSection';
+import CounterpartiesSection from '../components/CounterpartiesSection';
+import DocumentsSection from '../components/DocumentsSection';
+import SettlementsSection from '../components/SettlementsSection';
+import PaymentSection from '../components/PaymentSection';
+import AcknowledgementSection from '../components/AcknowledgementSection';
 import { STAGE_LABELS } from '../utils/constants';
 
 const STEP_ICONS = [
@@ -150,397 +134,89 @@ export default function TransactionDetailScreen() {
       <Header name={userName} />
 
       <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
-        {/* Breadcrumb */}
-        <Text style={[styles.breadcrumb, { color: isDark ? theme.text : Colors.primary }]}>{formatType(transaction.type)}</Text>
+        <TransactionSummarySection
+          transaction={transaction}
+          amountHidden={amountHidden}
+          setAmountHidden={setAmountHidden}
+          myRole={myRole}
+          theme={theme}
+          isDark={isDark}
+          styles={styles}
+        />
 
-        {/* Order ID & Actions */}
-        <View style={styles.summaryTopRow}>
-          <View style={styles.idRow}>
-            <OrderIdIcon size={16} color={isDark ? theme.icon : Colors.primary} />
-            <Text style={[styles.transactionId, { color: isDark ? theme.text : Colors.primary }]}>{transaction.reference}</Text>
-          </View>
-          <TouchableOpacity
-            style={[
-              styles.actionsBtn,
-              {
-                backgroundColor: isDark ? theme.actionButtonBg : theme.cardBg,
-                borderColor: isDark ? theme.actionButtonBg : Colors.border,
-              },
-            ]}
-          >
-            <Text style={[styles.actionsBtnText, { color: isDark ? theme.actionButtonText : Colors.primary }]}>Actions</Text>
-            <VerticalDotsIcon color={isDark ? theme.icon : Colors.primary} />
-          </TouchableOpacity>
-        </View>
+        <TransactionStatusSection
+          transaction={transaction}
+          stepData={stepData}
+          theme={theme}
+          isDark={isDark}
+          onOpenHistory={() => setHistoryVisible(true)}
+          styles={styles}
+        />
 
-        {/* Transaction Summary Card */}
-        <View style={[styles.summaryCard, { backgroundColor: theme.summaryCardBg }]}>
-          <View style={styles.amountRow}>
-            <Text style={[styles.amountText, { color: isDark ? theme.text : Colors.primary }]}>
-              {amountHidden
-                ? '••••••••'
-                : formatAmount(transaction.amount, transaction.currency, transaction)}
-            </Text>
-            <TouchableOpacity onPress={() => setAmountHidden((v) => !v)} style={{ marginLeft: 10 }}>
-              {amountHidden ? <EyeCrossedIcon size={18} color={isDark ? theme.icon : Colors.grayMedium} /> : <EyeOpenIcon size={18} color={isDark ? theme.icon : Colors.grayMedium} />}
-            </TouchableOpacity>
-          </View>
-          <Text style={[styles.valueLabel, { color: isDark ? theme.text : theme.textSecondary }]}>Transaction Value</Text>
+        <CounterpartiesSection
+          counterparties={counterparties}
+          theme={theme}
+          isDark={isDark}
+          resendPending={resendCounterpartyEmail.isPending}
+          onNudge={async (counterparty) => {
+            try {
+              const result = await resendCounterpartyEmail.mutateAsync({
+                transactionId: transaction.id,
+                counterpartyId: counterparty.id,
+              });
+              const message =
+                result?.message ||
+                result?.data?.message ||
+                'Reminder email sent successfully.';
+              Alert.alert('Nudge Sent', message);
+            } catch (error) {
+              Alert.alert(
+                'Failed to Send Nudge',
+                error?.response?.data?.error ||
+                  error?.response?.data?.message ||
+                  error?.message ||
+                  'Unable to send reminder email.',
+              );
+            }
+          }}
+          styles={styles}
+        />
 
-          <Text style={[styles.descriptionText, { color: isDark ? theme.text : Colors.primary }]} numberOfLines={2}>
-            {transaction.description}
-          </Text>
+        <DocumentsSection
+          documents={documents}
+          theme={theme}
+          isDark={isDark}
+          styles={styles}
+        />
 
-          <View style={styles.closingRow}>
-            <View style={styles.closingLeft}>
-              <CalendarIcon size={16} color={isDark ? theme.icon : Colors.primary} />
-              <View style={{ marginLeft: 8 }}>
-                <Text style={[styles.closingDateValue, { color: isDark ? theme.text : Colors.primary }]}>{formatDate(transaction.closing_date)}</Text>
-                <Text style={[styles.closingDateLabel, { color: isDark ? theme.text : theme.textSecondary }]}>Closing Date</Text>
-              </View>
-            </View>
-            <View style={styles.roleRow}>
-              <AvatarIcon size={20} color={isDark ? theme.icon : Colors.primary} />
-              <View style={styles.roleSection}>
-                <Text style={[styles.roleValue, { color: isDark ? theme.text : Colors.primary }]}>
-                  {myRole?.role
-                    ? myRole.role.charAt(0).toUpperCase() + myRole.role.slice(1)
-                    : 'Participant'}
-                </Text>
-                <Text style={[styles.roleLabel, { color: isDark ? theme.text : theme.textSecondary }]}>Role</Text>
-              </View>
-            </View>
-          </View>
-        </View>
+        <SettlementsSection
+          settlements={settlements}
+          transaction={transaction}
+          emailToName={emailToName}
+          expandedPreconditions={expandedPreconditions}
+          setExpandedPreconditions={setExpandedPreconditions}
+          theme={theme}
+          isDark={isDark}
+          onOpenStatement={() => setStatementVisible(true)}
+          styles={styles}
+        />
 
-        {/* Transaction Status */}
-        <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitle, { color: isDark ? theme.text : Colors.primary }]}>Transaction Status</Text>
+        <PaymentSection
+          totalDue={totalDue}
+          transaction={transaction}
+          myRole={myRole}
+          theme={theme}
+          isDark={isDark}
+          styles={styles}
+        />
 
-          <View style={[styles.statusCard, { backgroundColor: theme.primary10 }]}>
-            <StepperChevron steps={stepData} />
-
-            <View style={[styles.awaitingBadge, { backgroundColor: theme.accent17 }]}>
-              <AwaitingDeliveryIcon size={18} color={isDark ? theme.icon : Colors.accent} />
-              <Text style={[styles.awaitingBadgeText, { color: isDark ? theme.text : Colors.accent }]}>
-                {getStatusLabel(transaction.current_stage || transaction.status)}
-              </Text>
-            </View>
-            <Text style={[styles.statusNote, { color: theme.text }]}>
-              {transaction.stage || getStatusLabel(transaction.current_stage || transaction.status)}
-            </Text>
-
-            <View
-              style={[
-                styles.actionRequiredBadge,
-                isDark && { backgroundColor: '#5B5FC780' },
-              ]}
-            >
-              <ActionRequiredIcon size={18} color={isDark ? theme.icon : Colors.primary} />
-              <Text style={[styles.actionRequiredBadgeText, { color: isDark ? theme.text : Colors.primary }]}>Action Required</Text>
-            </View>
-            <Text style={[styles.statusNote, { color: theme.text }]}>
-              {transaction.viewer_next_required_action
-                ? formatActionLabel(transaction.viewer_next_required_action)
-                : 'None'}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            style={styles.historyLink}
-            onPress={() => setHistoryVisible(true)}
-          >
-            <View style={styles.inlineLinkRow}>
-              <Text style={styles.historyLinkText}>Transaction History</Text>
-              <ChevronRightSmall />
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Counterparties */}
-        <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitle, { color: isDark ? theme.text : Colors.primary }]}>Counterparties</Text>
-
-          <View style={[styles.counterpartiesCard, { backgroundColor: theme.primary10 }]}>
-            {counterparties.map((cp, index) => (
-              <View key={cp.id || `${cp.email}-${index}`}>
-                <View style={styles.cpBlock}>
-                  <View style={styles.cpTopRow}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.cpName, { color: theme.text }]}>
-                        {cp.first_name} {cp.middle_name ? cp.middle_name + ' ' : ''}{cp.last_name}
-                      </Text>
-                      <Text style={[styles.cpRole, { color: theme.text }]}>
-                        {cp.role ? cp.role.charAt(0).toUpperCase() + cp.role.slice(1) : 'Counterparty'}
-                      </Text>
-                    </View>
-                    {cp.next_required_action ? (
-                      <View style={[styles.cpActionBadge, isDark && { backgroundColor: '#FCE8EC' }]}>
-                        <ExclamationIcon size={14} />
-                        <Text style={styles.cpActionText}> Action Required</Text>
-                      </View>
-                    ) : (
-                      <View style={[styles.cpNoActionBadge, isDark && { backgroundColor: '#E6F5F0' }]}>
-                        <Text style={styles.cpNoActionText}>No Action Required</Text>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.cpBottomRow}>
-                    <Text style={[styles.cpEmail, { color: theme.text }]} numberOfLines={1}>{cp.email}</Text>
-                    {cp.next_required_action && (
-                      <TouchableOpacity
-                        style={styles.nudgeBtn}
-                        disabled={resendCounterpartyEmail.isPending}
-                        onPress={async () => {
-                          try {
-                            const result = await resendCounterpartyEmail.mutateAsync({
-                              transactionId: transaction.id,
-                              counterpartyId: cp.id,
-                            });
-                            const message =
-                              result?.message ||
-                              result?.data?.message ||
-                              'Reminder email sent successfully.';
-                            Alert.alert('Nudge Sent', message);
-                          } catch (error) {
-                            Alert.alert(
-                              'Failed to Send Nudge',
-                              error?.response?.data?.error ||
-                                error?.response?.data?.message ||
-                                error?.message ||
-                                'Unable to send reminder email.',
-                            );
-                          }
-                        }}
-                      >
-                        <NudgeIcon size={14} color={Colors.white} />
-                        <Text style={styles.nudgeBtnText}>Nudge</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-                {index < counterparties.length - 1 && <View style={styles.cpDivider} />}
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Transaction Documents */}
-        {documents.length > 0 && (
-          <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitle, { color: isDark ? theme.text : Colors.primary }]}>Transaction Documents</Text>
-            <View style={[styles.documentsCard, { backgroundColor: theme.primary10 }]}>
-              {documents.map((doc, index) => (
-                <View key={doc.id || `${doc.name}-${index}`}>
-                  <View style={styles.documentRow}>
-                    <Text style={[styles.documentNumber, { color: theme.text }]}>{index + 1}.</Text>
-                    <Text style={[styles.documentName, { color: theme.text }]}>{doc.description || doc.name || `Document ${index + 1}`}</Text>
-                    <View style={{ flex: 1 }} />
-                    <TouchableOpacity style={[styles.docFileBtn, { backgroundColor: theme.surfaceLight }]}>
-                      <Ionicons name="document-text" size={18} color={isDark ? theme.icon : Colors.gray} />
-                    </TouchableOpacity>
-                  </View>
-                  {index < documents.length - 1 && <View style={styles.docDivider} />}
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Settlements */}
-        {settlements.length > 0 && (
-          <View style={styles.sectionContainer}>
-            <Text style={[styles.sectionTitle, { color: isDark ? theme.text : Colors.primary }]}>Settlements</Text>
-            <View style={[styles.settlementsCard, { backgroundColor: theme.primary10 }]}>
-              {settlements.map((item, index) => {
-                const preconditions = item.preconditions || item.conditions || [];
-                const preconditionsExpanded = expandedPreconditions[index] ?? false;
-                const settlementCurrency = item.currency || transaction.currency;
-
-                return (
-                  <View key={item.id || `settlement-${index}`}>
-                    {/* Settlement header */}
-                    <View style={styles.settlementHeader}>
-                      <Text style={[styles.settlementNumber, { color: theme.textSecondary }]}>{index + 1}.</Text>
-                      <Text style={[styles.settlementName, { color: theme.textSecondary }]}>
-                        {item.description || `Settlement ${index + 1}`}
-                      </Text>
-                      <View style={styles.settlementStatus}>
-                        <PendingStarIcon size={14} color={Colors.accent} />
-                        <Text style={[styles.settlementStatusText, { color: Colors.accent }]}>
-                          {item.status
-                            ? item.status.charAt(0).toUpperCase() + item.status.slice(1).toLowerCase()
-                            : 'Pending'}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Detail rows */}
-                    <View style={styles.settlementDetails}>
-                      <View style={styles.settlementRow}>
-                        <Text style={[styles.settlementLabel, { color: theme.text }]}>Value</Text>
-                        <Text style={[styles.settlementValue, { color: theme.text }]}>
-                          {item.amount_type === 'percentage'
-                            ? `${settlementCurrency} ${Number(
-                              ((item.value || 0) / 100) * (transaction.amount || 0),
-                            ).toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}`
-                            : formatAmount(item.actual_amount || item.value, settlementCurrency, transaction)}
-                        </Text>
-                      </View>
-                      <View style={styles.settlementRow}>
-                        <Text style={[styles.settlementLabel, { color: theme.text }]}>Due From</Text>
-                        <Text style={[styles.settlementValue, { color: theme.text }]}>{(item.due_from && emailToName[item.due_from.toLowerCase()]) || item.due_from || '—'}</Text>
-                      </View>
-                      <View style={styles.settlementRow}>
-                        <Text style={[styles.settlementLabel, { color: theme.text }]}>Due To</Text>
-                        <Text style={[styles.settlementValue, { color: theme.text }]}>{(item.due_to && emailToName[item.due_to.toLowerCase()]) || item.due_to || '—'}</Text>
-                      </View>
-                    </View>
-
-                    {/* Disbursement Preconditions */}
-                    {preconditions.length > 0 && (
-                      <View style={styles.preconditionsSection}>
-                        <TouchableOpacity
-                          style={styles.preconditionsToggle}
-                          onPress={() =>
-                            setExpandedPreconditions((prev) => ({
-                              ...prev,
-                              [index]: !prev[index],
-                            }))
-                          }
-                        >
-                          <Text style={[styles.preconditionsTitle, { color: isDark ? theme.text : '#2F6BC6' }]}>Disbursement Preconditions</Text>
-                          <Ionicons
-                            name={preconditionsExpanded ? 'chevron-up' : 'chevron-down'}
-                            size={16}
-                            color={isDark ? theme.icon : Colors.primary}
-                          />
-                        </TouchableOpacity>
-
-                        {preconditionsExpanded && (
-                          <View style={[styles.preconditionsBox, { backgroundColor: theme.cardBg }]}>
-                            {preconditions.map((cond, cIndex) => (
-                              <View key={cond.id || `cond-${cIndex}`}>
-                                {cIndex > 0 && <View style={styles.preconditionDivider} />}
-                                <View style={styles.preconditionItem}>
-                                  <Text style={[styles.preconditionNumber, { color: theme.text }]}>{cIndex + 1}.</Text>
-                                  <View style={{ flex: 1 }}>
-                                    <Text style={[styles.preconditionDesc, { color: theme.text }]}>
-                                      {cond.description || cond.name || `Condition ${cIndex + 1}`}
-                                    </Text>
-                                    {(cond.parties || []).map((party, pIndex) => (
-                                      <View key={pIndex} style={styles.preconditionPartyRow}>
-                                        <Text style={[styles.preconditionParty, { color: theme.text }]}>{party.name || party}</Text>
-                                        <View style={[styles.checkbox, { backgroundColor: theme.cardBg }]}>
-                                          {party.completed && (
-                                            <Ionicons name="checkmark" size={12} color={isDark ? theme.icon : Colors.primary} />
-                                          )}
-                                        </View>
-                                      </View>
-                                    ))}
-                                  </View>
-                                </View>
-                              </View>
-                            ))}
-                          </View>
-                        )}
-                      </View>
-                    )}
-
-                    {index < settlements.length - 1 && <View style={styles.settlementDivider} />}
-                  </View>
-                );
-              })}
-
-            </View>
-
-            <TouchableOpacity
-              style={styles.viewStatementLink}
-              onPress={() => setStatementVisible(true)}
-            >
-              <View style={styles.inlineLinkRow}>
-                <Text style={styles.viewStatementText}>View Settlement Statement</Text>
-                <ChevronRightSmall />
-              </View>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Payment */}
-        <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionTitle, { color: isDark ? theme.text : Colors.primary }]}>Payment</Text>
-
-          <View style={[styles.paymentCard, { backgroundColor: theme.primary10 }]}>
-            <View style={styles.paymentAmountRow}>
-              <TimeQuarterIcon size={20} color={isDark ? theme.icon : Colors.danger} />
-              <View style={{ marginLeft: 8 }}>
-                <Text style={[styles.paymentAmount, { color: theme.text }]}>
-                  {formatAmount(totalDue, transaction.currency, transaction)}
-                </Text>
-              </View>
-            </View>
-            <Text style={[styles.paymentLabel, { color: theme.text }]}>
-              Balance Due from [{myRole ? myRole.role.charAt(0).toUpperCase() + myRole.role.slice(1) : 'Buyer'}]:
-            </Text>
-
-            <TouchableOpacity style={styles.paymentBtn}>
-              <Text style={styles.paymentBtnText}>Transfer Payment to Escrow</Text>
-            </TouchableOpacity>
-
-            <Text style={[styles.paymentNote, { color: theme.text }]}>
-              Your payment will be held in an Escrow Account with one of our Partner Banks until you authorize disbursement to the relevant counterparty/counterparties.
-            </Text>
-
-            <TouchableOpacity>
-              <View style={styles.inlineLinkRow}>
-                <Text style={styles.paymentDetailsLink}>View Payment Details</Text>
-                <ChevronRightSmall />
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Acknowledgement and Acceptance */}
-        <View style={[styles.sectionContainer, { paddingTop: 28 }]}>
-          <Text style={[styles.sectionTitle, { color: isDark ? theme.text : Colors.primary }]}>Acknowledgement and Acceptance</Text>
-
-          <View style={[styles.acknowledgementCard, { backgroundColor: theme.primary10 }]}>
-            <Text style={[styles.acknowledgementText, { color: theme.text }]}>
-              By signing below, [{counterparties[0]?.first_name || 'Buyer'}'s Name], the [{myRole?.role ? myRole.role.charAt(0).toUpperCase() + myRole.role.slice(1) : 'Role'}], acknowledges having read, understood, and agreed to the terms outlined in the attached Transaction Documents and Settlement Statement. The undersigned confirms their acceptance of the provisions described herein as binding and enforceable.{' '}
-              <Text style={styles.termsLink}>Terms and Conditions</Text>.
-            </Text>
-
-            {counterparties.length > 0 && (
-              <Text style={[styles.signerName, { color: theme.text }]}>
-                {counterparties[0].first_name} {counterparties[0].last_name}
-              </Text>
-            )}
-
-            <TouchableOpacity style={styles.signatureBtn}>
-              <Text style={styles.signatureBtnText}>Insert Signature</Text>
-            </TouchableOpacity>
-
-            <View style={styles.signatureLine} />
-
-            <View style={styles.byRow}>
-              <Text style={[styles.byLabel, { color: theme.text }]}>By:</Text>
-              <View style={styles.byInput}>
-                <Text style={[styles.byPlaceholder, { color: theme.text }]}>Buyers' Name Placeholder</Text>
-              </View>
-            </View>
-
-            <TouchableOpacity style={styles.declineBtn}>
-              <Text style={styles.declineBtnText}>Decline Signing</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.submitBtn}>
-            <Text style={styles.submitBtnText}>Submit</Text>
-          </TouchableOpacity>
-        </View>
+        <AcknowledgementSection
+          counterparties={counterparties}
+          myRole={myRole}
+          theme={theme}
+          isDark={isDark}
+          styles={styles}
+        />
 
         <View style={{ height: 30 }} />
       </ScrollView>

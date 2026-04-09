@@ -1,4 +1,4 @@
-import useUiStore from '../stores/uiStore';
+import { useColorScheme } from 'react-native';
 
 const light = {
   isDark: false,
@@ -17,8 +17,8 @@ const light = {
   logoColor: '#FFFFFF',
   logoAccent: '#FFA600',
   summaryCardBg: 'rgba(91, 95, 199, 0.1)',
-  actionButtonBg: '#FFFFFF',
-  actionButtonText: '#5B5FC7',
+  actionButtonBg: '#5B5FC7',
+  actionButtonText: '#FFFFFF',
   icon: '#5B5FC7',
   iconMuted: '#979797',
   divider: '#D5D5D5',
@@ -28,10 +28,10 @@ const dark = {
   isDark: true,
   background: '#212121',
   cardBg: '#FFFFFF1A',
-  modalBg: '#2B2B2B',
-  inputBg: '#2B2B2B',
+  modalBg: '#FFFFFF1A',
+  inputBg: '#FFFFFF1A',
   text: '#FFFFFF',
-  textSecondary: '#FFFFFF',
+  textSecondary: '#C9C9C9',
   surfaceLight: '#FFFFFF1A',
   primaryLight: '#5B5FC780',
   primary5: '#FFFFFF1A',
@@ -49,6 +49,6 @@ const dark = {
 };
 
 export default function useTheme() {
-  const darkMode = useUiStore((s) => s.darkMode);
-  return darkMode ? dark : light;
+  const systemScheme = useColorScheme();
+  return systemScheme === 'dark' ? dark : light;
 }

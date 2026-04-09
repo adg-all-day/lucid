@@ -10,6 +10,7 @@ import Colors from '../../../constants/colors';
 import { twoFactorMethodSchema } from '../schemas/auth.schema';
 import { useGet2FAMethods, useSend2FAChallenge } from '../../../api/queries/auth';
 import useAuthStore from '../../../stores/authStore';
+import useTheme from '../../../hooks/useTheme';
 
 const FALLBACK_OPTIONS = [
   {
@@ -37,14 +38,16 @@ const METHOD_LABELS = {
 };
 
 function MethodOption({ title, description, selected, onPress }) {
+  const theme = useTheme();
+
   return (
     <Pressable style={styles.optionRow} onPress={onPress}>
-      <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
+      <View style={[styles.radioOuter, { borderColor: selected ? Colors.primary : theme.divider }, selected && styles.radioOuterSelected]}>
         {selected ? <View style={styles.radioInner} /> : null}
       </View>
       <View style={styles.optionTextBlock}>
-        <Text style={styles.optionTitle}>{title}</Text>
-        <Text style={styles.optionDescription}>{description}</Text>
+        <Text style={[styles.optionTitle, { color: theme.text }]}>{title}</Text>
+        <Text style={[styles.optionDescription, { color: theme.text }]}>{description}</Text>
       </View>
     </Pressable>
   );
@@ -52,6 +55,7 @@ function MethodOption({ title, description, selected, onPress }) {
 
 export default function TwoFactorMethodScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const sessionId = useAuthStore((state) => state.sessionId);
   const methodsMutation = useGet2FAMethods();
   const challengeMutation = useSend2FAChallenge();
@@ -104,7 +108,7 @@ export default function TwoFactorMethodScreen() {
         style={styles.flex}
       >
         <View style={styles.form}>
-          <Text style={styles.heading}>
+          <Text style={[styles.heading, { color: theme.text }]}>
             Select your preferred method for two-factor authentication
           </Text>
 
@@ -156,7 +160,6 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 13,
     lineHeight: 18,
-    color: Colors.black,
     fontWeight: '700',
     marginBottom: 18,
   },
@@ -196,14 +199,12 @@ const styles = StyleSheet.create({
   },
   optionTitle: {
     fontSize: 14,
-    color: Colors.black,
     fontWeight: '700',
     marginBottom: 2,
   },
   optionDescription: {
     fontSize: 13,
     lineHeight: 18,
-    color: '#000000',
     fontWeight: '500',
   },
   errorText: {

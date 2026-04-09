@@ -7,8 +7,10 @@ import Colors from '../../../constants/colors';
 import EmailVerificationIllustration from '../../../icons/EmailVerificationIllustration';
 import { useResendVerification } from '../../../api/queries/auth';
 import getApiErrorMessage from '../utils/getApiErrorMessage';
+import useTheme from '../../../hooks/useTheme';
 
 export default function EmailVerificationScreen({ email = '' }) {
+  const theme = useTheme();
   const resendMutation = useResendVerification();
 
   const onResend = async () => {
@@ -23,17 +25,17 @@ export default function EmailVerificationScreen({ email = '' }) {
   return (
     <AuthShell title="Email Verification" cardStyle={styles.card}>
       <View style={styles.content}>
-        <View style={styles.illustrationCircle}>
-          <EmailVerificationIllustration size={60} />
+        <View style={[styles.illustrationCircle, { borderColor: theme.isDark ? Colors.white : Colors.primary }]}>
+          <EmailVerificationIllustration size={60} color={theme.isDark ? Colors.white : Colors.primary} />
         </View>
 
-        <Text style={styles.heading}>Verify your email</Text>
+        <Text style={[styles.heading, { color: theme.text }]}>Verify your email</Text>
 
-        <Text style={styles.sentText}>
+        <Text style={[styles.sentText, { color: theme.text }]}>
           A verification email has been sent to <Text style={styles.emailBold}>{email}</Text>
         </Text>
 
-        <Text style={styles.instructionText}>
+        <Text style={[styles.instructionText, { color: theme.text }]}>
           Kindly follow the link to verify your account. If you don't see it, click the resend button below.
         </Text>
 
@@ -67,7 +69,6 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 100,
     borderWidth: 1,
-    borderColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
@@ -75,12 +76,10 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 16,
     fontWeight: '700',
-    color: Colors.black,
     marginBottom: 12,
   },
   sentText: {
     fontSize: 13,
-    color: Colors.black,
     fontWeight: '500',
     textAlign: 'center',
     marginBottom: 16,
@@ -90,7 +89,6 @@ const styles = StyleSheet.create({
   },
   instructionText: {
     fontSize: 13,
-    color: Colors.black,
     fontWeight: '500',
     textAlign: 'center',
     marginBottom: 24,

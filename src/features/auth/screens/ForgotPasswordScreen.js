@@ -1,6 +1,5 @@
 import React from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import AuthShell from '../components/AuthShell';
@@ -11,9 +10,10 @@ import Colors from '../../../constants/colors';
 import MailIcon from '../../../icons/MailIcon';
 import { forgotPasswordSchema } from '../schemas/auth.schema';
 import { useForgotPassword } from '../../../api/queries/auth';
+import useTheme from '../../../hooks/useTheme';
 
 export default function ForgotPasswordScreen() {
-  const router = useRouter();
+  const theme = useTheme();
   const forgotMutation = useForgotPassword();
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(forgotPasswordSchema),
@@ -23,7 +23,6 @@ export default function ForgotPasswordScreen() {
   const onSubmit = handleSubmit(async (data) => {
     try {
       await forgotMutation.mutateAsync({ email: data.email });
-      router.push({ pathname: '/email-verification', params: { email: data.email } });
     } catch {
       // error available via forgotMutation.error
     }
@@ -36,7 +35,7 @@ export default function ForgotPasswordScreen() {
         style={styles.flex}
       >
         <View style={styles.form}>
-          <Text style={styles.instruction}>
+          <Text style={[styles.instruction, { color: theme.text }]}>
             Enter the email address linked to to your account
           </Text>
 
@@ -44,13 +43,19 @@ export default function ForgotPasswordScreen() {
             control={control}
             name="email"
             label="Email"
-            trailing={<MailIcon size={18} color={Colors.grayMedium} />}
+            trailing={<MailIcon size={18} color={theme.iconMuted} />}
             autoCapitalize="none"
           />
 
-          <Text style={styles.helperText}>
+          <Text style={[styles.helperText, { color: theme.text }]}>
             A link to recover your account will be sent to your email address
           </Text>
+
+          {forgotMutation.isSuccess ? (
+            <Text style={styles.successText}>
+              If the email exists, recovery instructions have been sent.
+            </Text>
+          ) : null}
 
           {forgotMutation.error ? (
             <Text style={styles.errorText}>
@@ -61,7 +66,7 @@ export default function ForgotPasswordScreen() {
           <AuthPrimaryButton title="Send Recovery Link" onPress={onSubmit} loading={forgotMutation.isPending} textStyle={styles.buttonText} />
 
           <View style={styles.footerRow}>
-            <Text style={styles.footerText}>Not yet registered? </Text>
+            <Text style={[styles.footerText, { color: theme.text }]}>Not yet registered? </Text>
             <Pressable onPress={() => router.push('/sign-up')}>
               <Text style={styles.footerLink}>Sign Up</Text>
             </Pressable>
@@ -84,13 +89,11 @@ const styles = StyleSheet.create({
   },
   instruction: {
     fontSize: 14,
-    color: Colors.black,
     fontWeight: '500',
     marginBottom: 16,
   },
   helperText: {
     fontSize: 14,
-    color: '#212121',
     fontWeight: '500',
     marginTop: -4,
     marginBottom: 20,
@@ -98,6 +101,12 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 14,
     fontWeight: '400',
+  },
+  successText: {
+    color: '#059669',
+    fontSize: 12,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   errorText: {
     color: Colors.error,
@@ -111,7 +120,6 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   footerText: {
-    color: '#212121',
     fontSize: 14,
     fontWeight: '500',
   },
