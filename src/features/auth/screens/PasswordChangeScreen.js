@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,26 +7,14 @@ import { Ionicons } from '@expo/vector-icons';
 import AuthShell from '../components/AuthShell';
 import AuthField from '../components/AuthField';
 import AuthPrimaryButton from '../components/AuthPrimaryButton';
+import PasswordRules from '../components/PasswordRules';
+import ResetLinkInvalidState from '../components/ResetLinkInvalidState';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
-import { passwordChecks, passwordChangeSchema } from '../schemas/auth.schema';
+import { passwordChangeSchema } from '../schemas/auth.schema';
 import { useSetPassword, useVerifyResetToken } from '../../../api/queries/auth';
 import useTheme from '../../../hooks/useTheme';
-
-function PasswordRule({ label, passed }) {
-  const theme = useTheme();
-
-  return (
-    <View style={styles.ruleRow}>
-      <Ionicons
-        name="checkmark-circle"
-        size={16}
-        color={passed ? '#059669' : '#A0A0A0'}
-      />
-      <Text style={[styles.ruleText, { color: passed ? '#059669' : theme.textSecondary }]}>{label}</Text>
-    </View>
-  );
-}
+import usePasswordChecks from '../hooks/usePasswordChecks';
 
 export default function PasswordChangeScreen({ resetToken }) {
   const router = useRouter();
@@ -50,11 +38,7 @@ export default function PasswordChangeScreen({ resetToken }) {
     },
   });
 
-  const password = watch('password');
-  const checks = useMemo(
-    () => passwordChecks.map((check) => ({ ...check, passed: check.test(password || '') })),
-    [password],
-  );
+  const checks = usePasswordChecks(watch('password'));
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -74,12 +58,7 @@ export default function PasswordChangeScreen({ resetToken }) {
   if (!resetToken) {
     return (
       <AuthShell title="Password Change" cardStyle={styles.card}>
-        <View style={styles.missingTokenContent}>
-          <Text style={styles.errorText}>Invalid or expired reset link.</Text>
-          <Pressable style={styles.backButton} onPress={() => router.replace('/log-in')}>
-            <Text style={styles.backButtonText}>Back to Login</Text>
-          </Pressable>
-        </View>
+        <ResetLinkInvalidState onBackToLogin={() => router.replace('/log-in')} />
       </AuthShell>
     );
   }
@@ -110,11 +89,7 @@ export default function PasswordChangeScreen({ resetToken }) {
               }
             />
 
-            <View style={styles.rulesBlock}>
-              {checks.map((check) => (
-                <PasswordRule key={check.key} label={check.label} passed={check.passed} />
-              ))}
-            </View>
+            <PasswordRules checks={checks} style={styles.rulesBlock} />
 
             <AuthField
               control={control}
@@ -169,31 +144,6 @@ const styles = StyleSheet.create({
   rulesBlock: {
     marginTop: -4,
     marginBottom: 8,
-    gap: 4,
-  },
-  ruleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ruleText: {
-    marginLeft: 7,
-    fontSize: 11.5,
-  },
-  missingTokenContent: {
-    alignItems: 'center',
-    paddingTop: 30,
-    gap: 16,
-  },
-  backButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 5,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-  },
-  backButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '500',
   },
   errorText: {
     color: Colors.error,

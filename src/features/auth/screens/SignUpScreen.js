@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,26 +7,14 @@ import { Ionicons } from '@expo/vector-icons';
 import AuthShell from '../components/AuthShell';
 import AuthField from '../components/AuthField';
 import AuthPrimaryButton from '../components/AuthPrimaryButton';
+import AuthFooterLink from '../components/AuthFooterLink';
+import PasswordRules from '../components/PasswordRules';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
-import { passwordChecks, signUpSchema } from '../schemas/auth.schema';
+import { signUpSchema } from '../schemas/auth.schema';
 import { useRegister } from '../../../api/queries/auth';
 import useTheme from '../../../hooks/useTheme';
-
-function PasswordRule({ label, passed }) {
-  const theme = useTheme();
-
-  return (
-    <View style={styles.ruleRow}>
-      <Ionicons
-        name="checkmark-circle"
-        size={16}
-        color={passed ? '#059669' : '#A0A0A0'}
-      />
-      <Text style={[styles.ruleText, { color: passed ? '#059669' : theme.textSecondary }]}>{label}</Text>
-    </View>
-  );
-}
+import usePasswordChecks from '../hooks/usePasswordChecks';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -45,11 +33,7 @@ export default function SignUpScreen() {
     },
   });
 
-  const password = watch('password');
-  const checks = useMemo(
-    () => passwordChecks.map((check) => ({ ...check, passed: check.test(password || '') })),
-    [password],
-  );
+  const checks = usePasswordChecks(watch('password'));
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -111,11 +95,7 @@ export default function SignUpScreen() {
               }
             />
 
-            <View style={styles.rulesBlock}>
-              {checks.map((check) => (
-                <PasswordRule key={check.key} label={check.label} passed={check.passed} />
-              ))}
-            </View>
+            <PasswordRules checks={checks} style={styles.rulesBlock} />
 
             <AuthField
               control={control}
@@ -140,12 +120,12 @@ export default function SignUpScreen() {
 
             <AuthPrimaryButton title="Sign up" onPress={onSubmit} loading={registerMutation.isPending} style={styles.primaryButton} />
 
-            <View style={styles.footerRow}>
-              <Text style={[styles.footerText, { color: theme.text }]}>Have an account? </Text>
-              <Pressable onPress={() => router.push('/log-in')}>
-                <Text style={styles.footerLink}>Log In</Text>
-              </Pressable>
-            </View>
+            <AuthFooterLink
+              prompt="Have an account?"
+              actionLabel="Log In"
+              onPress={() => router.push('/log-in')}
+              style={styles.footerRow}
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -169,23 +149,6 @@ const styles = StyleSheet.create({
   rulesBlock: {
     marginTop: -4,
     marginBottom: 8,
-    gap: 4,
-  },
-  ruleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ruleText: {
-    marginLeft: 7,
-    fontSize: 11.5,
-  },
-  repeatTrailing: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  repeatTrailingButton: {
-    width: 66,
   },
   errorText: {
     color: Colors.error,
@@ -197,18 +160,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   footerRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
     marginTop: 16,
     marginBottom: 4,
-  },
-  footerText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  footerLink: {
-    color: Colors.primary,
-    fontSize: 12,
-    fontWeight: '500',
   },
 });

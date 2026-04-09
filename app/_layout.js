@@ -3,14 +3,13 @@
 
 import { useCallback, useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import queryClient from '../src/api/queryClient';
 import useAuthStore from '../src/stores/authStore';
 import useTheme from '../src/hooks/useTheme';
+import QueryProvider from '../src/providers/QueryProvider';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,7 +55,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.background }} onLayout={onLayoutRootView}>
-      <QueryClientProvider client={queryClient}>
+      <QueryProvider>
         <StatusBar style="light" />
         <Stack initialRouteName="splash" screenOptions={{ headerShown: false }}>
           <Stack.Screen name="splash" />
@@ -73,7 +72,7 @@ export default function RootLayout() {
             }}
           />
         </Stack>
-      </QueryClientProvider>
+      </QueryProvider>
     </GestureHandlerRootView>
   );
 }

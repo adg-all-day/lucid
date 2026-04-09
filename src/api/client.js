@@ -11,9 +11,6 @@ import queryClient from './queryClient';
 // Main JSON client — used for most GET/PUT/DELETE requests
 const client = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 client.interceptors.request.use((config) => {
@@ -44,40 +41,4 @@ client.interceptors.response.use(
   },
 );
 
-// Multipart client for file uploads (FormData).
-// We intentionally do NOT set Content-Type here — axios needs to set it
-// itself so it can include the correct multipart boundary string.
-const multipartClient = axios.create({
-  baseURL: BASE_URL,
-  headers: {},
-});
-
-multipartClient.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().token;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  } else {
-    delete config.headers.Authorization;
-  }
-  return config;
-});
-
-// Same unwrap + 401 handling for the multipart client
-multipartClient.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    const status = error.response?.status;
-    const path = error.config?.url;
-
-    if (status === 401 && !path?.includes('/auth/')) {
-      useAuthStore.getState().clearToken();
-      queryClient.clear();
-      router.replace('/log-in');
-    }
-
-    throw error;
-  },
-);
-
 export default client;
-export { multipartClient };

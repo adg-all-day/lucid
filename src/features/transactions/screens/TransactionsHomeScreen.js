@@ -5,22 +5,23 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
   useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import Text from '../../../components/StyledText';
 import Header from '../../../components/Header';
 import Colors from '../../../constants/colors';
 import useUserStore from '../../../stores/userStore';
-import { useActivityLog } from '../../../api/queries/activity';
-import { useTransactions } from '../../../api/queries/transactions';
 import TransactionStats from '../components/TransactionStats';
 import ActivityLog from '../components/ActivityLog';
-import TransactionsSearchRow from '../components/TransactionsSearchRow';
-import TransactionsTabs from '../components/TransactionsTabs';
-import TransactionsListSection from '../components/TransactionsListSection';
-import useTransactionFilters from '../hooks/useTransactionFilters';
-import { TABS, OPEN_STATUSES, CLOSED_STATUSES } from '../utils/constants';
+import TransactionCard from '../components/TransactionCard';
+import { SearchIcon } from '../../../icons';
+import useTransactionsHomeViewModel from '../hooks/useTransactionsHomeViewModel';
+import { TABS } from '../utils/constants';
 import useUiStore from '../../../stores/uiStore';
 import useTheme from '../../../hooks/useTheme';
 
@@ -39,27 +40,17 @@ export default function TransactionsHomeScreen() {
   const underlineLeft = useRef(new Animated.Value(0)).current;
   const underlineWidth = useRef(new Animated.Value(0)).current;
 
-  const transactionsQuery = useTransactions();
-  const activityQuery = useActivityLog();
-
-  const transactions = transactionsQuery.data ?? [];
-  const filteredTransactions = useTransactionFilters(
-    transactions,
+  const {
+    activityQuery,
+    transactionsQuery,
+    filteredTransactions,
+    stats,
+    compactActions,
+  } = useTransactionsHomeViewModel(
     activeTab,
     searchText,
+    screenWidth,
   );
-  const compactActions = screenWidth < 390;
-
-  const stats = {
-    all: transactions.length,
-    actionRequired: transactions.filter(
-      (item) =>
-        item.status === 'AWAITING_SIGNATURES' ||
-        item.status === 'AWAITING_FUNDS',
-    ).length,
-    open: transactions.filter((item) => OPEN_STATUSES.includes(item.status)).length,
-    closed: transactions.filter((item) => CLOSED_STATUSES.includes(item.status)).length,
-  };
 
   useEffect(() => {
     const activeLayout = tabLayouts[activeTab];
@@ -103,33 +94,116 @@ export default function TransactionsHomeScreen() {
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: isDark ? theme.text : Colors.primary }]}>My Transactions</Text>
           <View style={[styles.sectionCard, { backgroundColor: theme.primary5 }]}>
-            <TransactionsSearchRow
-              theme={theme}
-              searchText={searchText}
-              setSearchText={setSearchText}
-              compactActions={compactActions}
-              onNewPress={() => router.push('/new-transaction')}
-              styles={styles}
-            />
+            <View style={styles.searchRow}>
+              <View style={[styles.searchBar, { backgroundColor: theme.cardBg }]}>
+                <SearchIcon size={13} color={theme.iconMuted} />
+                <TextInput
+                  style={[styles.searchInput, { color: theme.text }]}
+                  value={searchText}
+                  onChangeText={setSearchText}
+                  placeholder="Search"
+                  placeholderTextColor={Colors.grayMedium}
+                />
+                {searchText ? (
+                  <TouchableOpacity onPress={() => setSearchText('')}>
+                    <Text style={styles.clearText}>x</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.iconButton,
+                  compactActions && styles.iconButtonCompact,
+                  { backgroundColor: theme.cardBg },
+                ]}
+              >
+                <Ionicons name="filter" size={22} color={theme.iconMuted} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.iconButton,
+                  compactActions && styles.iconButtonCompact,
+                  { backgroundColor: theme.cardBg },
+                ]}
+              >
+                <Ionicons name="swap-vertical" size={20} color={theme.iconMuted} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.newBtn, compactActions && styles.newBtnCompact]}
+                onPress={() => router.push('/new-transaction')}
+              >
+                <Text style={styles.newBtnText}>New +</Text>
+              </TouchableOpacity>
+            </View>
 
-            <TransactionsTabs
-              tabs={TABS}
-              theme={theme}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              setTabLayouts={setTabLayouts}
-              underlineLeft={underlineLeft}
-              underlineWidth={underlineWidth}
-              styles={styles}
-            />
+            <View style={styles.tabsWrap}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.tabsContainer}
+              >
+                {TABS.map((tab) => (
+                  <TouchableOpacity
+                    key={tab}
+                    style={styles.tab}
+                    onPress={() => setActiveTab(tab)}
+                    onLayout={(event) => {
+                      const { x, width } = event.nativeEvent.layout;
+                      setTabLayouts((current) => {
+                        const previous = current[tab];
+                        if (previous && previous.x === x && previous.width === width) {
+                          return current;
+                        }
 
-            <TransactionsListSection
-              isLoading={transactionsQuery.isLoading}
-              filteredTransactions={filteredTransactions}
-              theme={theme}
-              onPressTransaction={(transactionId) => router.push(`/transaction/${transactionId}`)}
-              styles={styles}
-            />
+                        return {
+                          ...current,
+                          [tab]: { x, width },
+                        };
+                      });
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.tabText,
+                        { color: theme.textSecondary },
+                        activeTab === tab && styles.tabTextActive,
+                      ]}
+                    >
+                      {tab}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.tabUnderline,
+                  {
+                    left: underlineLeft,
+                    width: underlineWidth,
+                  },
+                ]}
+              />
+            </View>
+            <View style={styles.tabDivider} />
+
+            {transactionsQuery.isLoading ? (
+              <ActivityIndicator
+                size="large"
+                color={Colors.primary}
+                style={styles.loading}
+              />
+            ) : filteredTransactions.length === 0 ? (
+              <Text style={[styles.emptyText, { color: theme.text }]}>No transactions found</Text>
+            ) : (
+              filteredTransactions.map((item) => (
+                <TransactionCard
+                  key={item.id}
+                  item={item}
+                  onPress={() => router.push(`/transaction/${item.id}`)}
+                />
+              ))
+            )}
           </View>
         </View>
 

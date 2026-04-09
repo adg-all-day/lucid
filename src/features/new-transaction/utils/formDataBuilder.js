@@ -2,6 +2,19 @@
 // The Go gin server expects dot notation like counterparties[0].email,
 // not nested JSON -- so we have to manually append every single field.
 
+import {
+  COUNTERPARTY_STATIC_DEFAULTS,
+  SETTLEMENT_STATIC_DEFAULTS,
+  TRANSACTION_FORM_KEYS,
+} from '../constants/formDataKeys';
+
+const transactionField = (key) => TRANSACTION_FORM_KEYS[key];
+const counterpartyField = (index, key) => `counterparties[${index}].${key}`;
+const counterpartyPermissionField = (counterpartyIndex, permissionIndex, key) =>
+  `counterparties[${counterpartyIndex}].permissions[${permissionIndex}].${key}`;
+const settlementField = (index, key) => `settlements[${index}].${key}`;
+const documentField = (index, key) => `documents[${index}].${key}`;
+
 /**
  * Takes the validated form values and returns a FormData ready for the API.
  * This is a straight extraction from the original handleSubmit in NewTransactionScreen.
@@ -14,74 +27,74 @@ export function buildTransactionFormData(values) {
   const formData = new FormData();
 
   // Top-level transaction fields
-  formData.append('type', values.transactionType);
-  formData.append('title', '');
-  formData.append('description', values.description);
-  formData.append('amount', values.transactionValue || '0');
-  formData.append('currency', values.currency);
-  formData.append('base_currency', values.currency);
+  formData.append(transactionField('type'), values.transactionType);
+  formData.append(transactionField('title'), '');
+  formData.append(transactionField('description'), values.description);
+  formData.append(transactionField('amount'), values.transactionValue || '0');
+  formData.append(transactionField('currency'), values.currency);
+  formData.append(transactionField('baseCurrency'), values.currency);
 
   // Closing date as ISO string, trimming the milliseconds like the original does
   const closingDateStr = values.closingDate
     ? values.closingDate.toISOString().replace('.000Z', 'Z')
     : new Date().toISOString().replace('.000Z', 'Z');
-  formData.append('closing_date', closingDateStr);
+  formData.append(transactionField('closingDate'), closingDateStr);
 
-  formData.append('enforce_signing_order', values.insertNumbering ? 'true' : 'false');
-  formData.append('email_subject', values.emailSubject || '');
-  formData.append('email_message', values.emailMessage || '');
+  formData.append(transactionField('enforceSigningOrder'), values.insertNumbering ? 'true' : 'false');
+  formData.append(transactionField('emailSubject'), values.emailSubject || '');
+  formData.append(transactionField('emailMessage'), values.emailMessage || '');
 
   // These are hardcoded for now -- currency exchange isn't wired up yet
-  formData.append('is_currency_exchange', 'false');
-  formData.append('exchange_rate', '0');
-  formData.append('platform_markup', '0');
+  formData.append(transactionField('isCurrencyExchange'), 'false');
+  formData.append(transactionField('exchangeRate'), '0');
+  formData.append(transactionField('platformMarkup'), '0');
 
   // Counterparties -- each field uses gin dot notation
   (values.counterparties || []).forEach((cp, i) => {
-    formData.append(`counterparties[${i}].email`, cp.email);
-    formData.append(`counterparties[${i}].first_name`, cp.firstName);
-    formData.append(`counterparties[${i}].middle_name`, cp.middleName || '');
-    formData.append(`counterparties[${i}].last_name`, cp.lastName);
-    formData.append(`counterparties[${i}].role`, cp.role);
-    formData.append(`counterparties[${i}].phone`, cp.phone ? `${cp.phoneCode}${cp.phone}` : '');
-    formData.append(`counterparties[${i}].notify_by_email`, cp.notifyEmail ? 'true' : 'false');
-    formData.append(`counterparties[${i}].notify_by_sms`, cp.notifyText ? 'true' : 'false');
-    formData.append(`counterparties[${i}].signature_required`, cp.signatureRequired ? 'true' : 'false');
-    formData.append(`counterparties[${i}].require_photo_id`, cp.requirePhotoId ? 'true' : 'false');
-    formData.append(`counterparties[${i}].signing_order`, String(i + 1));
-    formData.append(`counterparties[${i}].access_code`, cp.accessCode || '');
-    formData.append(`counterparties[${i}].private_message`, cp.privateMessage || '');
+    formData.append(counterpartyField(i, 'email'), cp.email);
+    formData.append(counterpartyField(i, 'first_name'), cp.firstName);
+    formData.append(counterpartyField(i, 'middle_name'), cp.middleName || '');
+    formData.append(counterpartyField(i, 'last_name'), cp.lastName);
+    formData.append(counterpartyField(i, 'role'), cp.role);
+    formData.append(counterpartyField(i, 'phone'), cp.phone ? `${cp.phoneCode}${cp.phone}` : '');
+    formData.append(counterpartyField(i, 'notify_by_email'), cp.notifyEmail ? 'true' : 'false');
+    formData.append(counterpartyField(i, 'notify_by_sms'), cp.notifyText ? 'true' : 'false');
+    formData.append(counterpartyField(i, 'signature_required'), cp.signatureRequired ? 'true' : 'false');
+    formData.append(counterpartyField(i, 'require_photo_id'), cp.requirePhotoId ? 'true' : 'false');
+    formData.append(counterpartyField(i, 'signing_order'), String(i + 1));
+    formData.append(counterpartyField(i, 'access_code'), cp.accessCode || '');
+    formData.append(counterpartyField(i, 'private_message'), cp.privateMessage || '');
 
     // These are always the same for individual counterparties
-    formData.append(`counterparties[${i}].type`, 'individual');
-    formData.append(`counterparties[${i}].user_id`, '0');
-    formData.append(`counterparties[${i}].amount`, '0');
-    formData.append(`counterparties[${i}].address`, '');
-    formData.append(`counterparties[${i}].business_name`, '');
+    formData.append(counterpartyField(i, 'type'), COUNTERPARTY_STATIC_DEFAULTS.type);
+    formData.append(counterpartyField(i, 'user_id'), COUNTERPARTY_STATIC_DEFAULTS.userId);
+    formData.append(counterpartyField(i, 'amount'), COUNTERPARTY_STATIC_DEFAULTS.amount);
+    formData.append(counterpartyField(i, 'address'), COUNTERPARTY_STATIC_DEFAULTS.address);
+    formData.append(counterpartyField(i, 'business_name'), COUNTERPARTY_STATIC_DEFAULTS.businessName);
 
     // Permissions get their own nested array with gin dot notation
     const permKeys = Object.keys(cp.permissions || {});
     permKeys.forEach((key, pi) => {
-      formData.append(`counterparties[${i}].permissions[${pi}].permission`, key);
-      formData.append(`counterparties[${i}].permissions[${pi}].value`, cp.permissions[key] ? 'true' : 'false');
+      formData.append(counterpartyPermissionField(i, pi, 'permission'), key);
+      formData.append(counterpartyPermissionField(i, pi, 'value'), cp.permissions[key] ? 'true' : 'false');
     });
   });
 
   // Settlements -- due_from/due_to are emails, not display names!
   (values.settlements || []).forEach((s, i) => {
-    formData.append(`settlements[${i}].description`, s.description || '');
-    formData.append(`settlements[${i}].value`, (s.value || '').replace(/[^0-9.]/g, '') || '0');
-    formData.append(`settlements[${i}].amount_type`, s.isFixed ? 'fixed' : 'percentage');
-    formData.append(`settlements[${i}].due_from`, s.dueFrom);
-    formData.append(`settlements[${i}].due_to`, s.dueTo);
-    formData.append(`settlements[${i}].id`, '0');
+    formData.append(settlementField(i, 'description'), s.description || '');
+    formData.append(settlementField(i, 'value'), (s.value || '').replace(/[^0-9.]/g, '') || '0');
+    formData.append(settlementField(i, 'amount_type'), s.isFixed ? 'fixed' : 'percentage');
+    formData.append(settlementField(i, 'due_from'), s.dueFrom);
+    formData.append(settlementField(i, 'due_to'), s.dueTo);
+    formData.append(settlementField(i, 'id'), SETTLEMENT_STATIC_DEFAULTS.id);
   });
 
   // Documents -- file gets attached as a multipart upload if present
   (values.documents || []).forEach((doc, i) => {
-    formData.append(`documents[${i}].description`, doc.description || '');
+    formData.append(documentField(i, 'description'), doc.description || '');
     if (doc.file) {
-      formData.append(`documents[${i}].file_url`, {
+      formData.append(documentField(i, 'file_url'), {
         uri: doc.file.uri,
         name: doc.file.name,
         type: doc.file.mimeType || 'application/octet-stream',

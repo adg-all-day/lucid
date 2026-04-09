@@ -5,53 +5,14 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import AuthShell from '../components/AuthShell';
 import AuthPrimaryButton from '../components/AuthPrimaryButton';
+import TwoFactorMethodOption from '../components/TwoFactorMethodOption';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import { twoFactorMethodSchema } from '../schemas/auth.schema';
 import { useGet2FAMethods, useSend2FAChallenge } from '../../../api/queries/auth';
 import useAuthStore from '../../../stores/authStore';
 import useTheme from '../../../hooks/useTheme';
-
-const FALLBACK_OPTIONS = [
-  {
-    value: 'authenticator',
-    title: 'Authenticator App',
-    description: 'Get one-time codes from your authorised authenticator app',
-  },
-  {
-    value: 'sms',
-    title: 'SMS or WhatsApp',
-    description: "We'll send a code to the number registered to your account",
-  },
-  {
-    value: 'email',
-    title: 'Email Address',
-    description: "We'll send a code to email address registered to your account",
-  },
-];
-
-const METHOD_LABELS = {
-  authenticator: { title: 'Authenticator App', description: 'Get one-time codes from your authorised authenticator app' },
-  sms: { title: 'SMS or WhatsApp', description: "We'll send a code to the number registered to your account" },
-  email: { title: 'Email Address', description: "We'll send a code to email address registered to your account" },
-  recovery_code: { title: 'Recovery Code', description: 'Use one of the recovery codes saved on your device' },
-};
-
-function MethodOption({ title, description, selected, onPress }) {
-  const theme = useTheme();
-
-  return (
-    <Pressable style={styles.optionRow} onPress={onPress}>
-      <View style={[styles.radioOuter, { borderColor: selected ? Colors.primary : theme.divider }, selected && styles.radioOuterSelected]}>
-        {selected ? <View style={styles.radioInner} /> : null}
-      </View>
-      <View style={styles.optionTextBlock}>
-        <Text style={[styles.optionTitle, { color: theme.text }]}>{title}</Text>
-        <Text style={[styles.optionDescription, { color: theme.text }]}>{description}</Text>
-      </View>
-    </Pressable>
-  );
-}
+import { mapTwoFactorMethods } from '../constants/twoFactorMethods';
 
 export default function TwoFactorMethodScreen() {
   const router = useRouter();
@@ -68,15 +29,7 @@ export default function TwoFactorMethodScreen() {
   }, [sessionId]);
 
   const methodOptions = useMemo(() => {
-    const apiMethods = methodsMutation.data?.methods;
-    if (Array.isArray(apiMethods) && apiMethods.length > 0) {
-      return apiMethods.map((m) => ({
-        value: m,
-        title: METHOD_LABELS[m]?.title || m,
-        description: METHOD_LABELS[m]?.description || '',
-      }));
-    }
-    return FALLBACK_OPTIONS;
+    return mapTwoFactorMethods(methodsMutation.data?.methods);
   }, [methodsMutation.data]);
 
   const { control, handleSubmit } = useForm({
@@ -121,7 +74,7 @@ export default function TwoFactorMethodScreen() {
               render={({ field: { onChange, value } }) => (
                 <View style={styles.options}>
                   {methodOptions.map((option) => (
-                    <MethodOption
+                    <TwoFactorMethodOption
                       key={option.value}
                       title={option.title}
                       description={option.description}
@@ -168,44 +121,6 @@ const styles = StyleSheet.create({
   },
   options: {
     marginBottom: 16,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 18,
-  },
-  radioOuter: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: '#D6D6D6',
-    marginTop: 2,
-    marginRight: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioOuterSelected: {
-    borderColor: Colors.primary,
-  },
-  radioInner: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.primary,
-  },
-  optionTextBlock: {
-    flex: 1,
-  },
-  optionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  optionDescription: {
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '500',
   },
   errorText: {
     color: Colors.error,

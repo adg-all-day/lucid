@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   View,
@@ -11,18 +11,8 @@ import Text from '../../../components/StyledText';
 import Header from '../../../components/Header';
 import Colors from '../../../constants/colors';
 import useTheme from '../../../hooks/useTheme';
-import {
-  StepAcceptanceIcon,
-  StepAgreementIcon,
-  StepDeliveryIcon,
-  StepDisbursementIcon,
-  StepEscrowIcon,
-} from '../../../icons';
 import useUserStore from '../../../stores/userStore';
 import {
-  useTransaction,
-  useTransactionHistory,
-  useSettlementStatement,
   useResendCounterpartyEmail,
 } from '../../../api/queries/transactions';
 import SettlementStatementModal from '../components/SettlementStatementModal';
@@ -34,63 +24,32 @@ import DocumentsSection from '../components/DocumentsSection';
 import SettlementsSection from '../components/SettlementsSection';
 import PaymentSection from '../components/PaymentSection';
 import AcknowledgementSection from '../components/AcknowledgementSection';
-import { STAGE_LABELS } from '../utils/constants';
-
-const STEP_ICONS = [
-  StepAgreementIcon,
-  StepEscrowIcon,
-  StepDeliveryIcon,
-  StepAcceptanceIcon,
-  StepDisbursementIcon,
-];
-
-// Maps API stages to chevron index:
-// 0=Agreement, 1=Escrow, 2=Delivery, 3=Acceptance, 4=Disbursement
-const STAGE_TO_CHEVRON = {
-  DRAFT: 0,
-  STAGING: 0,
-  AWAITING_SIGNATURES: 0,
-  AWAITING_FUNDS: 1,
-  AWAITING_DISBURSEMENT: 2,
-  COMPLETED: 4,
-};
+import useTransactionDetailViewModel from '../hooks/useTransactionDetailViewModel';
 
 export default function TransactionDetailScreen() {
   const { id } = useLocalSearchParams();
   const theme = useTheme();
   const isDark = theme.isDark;
-  const userEmail = useUserStore((state) => state.email);
   const userName = useUserStore((state) => state.name);
   const [amountHidden, setAmountHidden] = useState(false);
   const [expandedPreconditions, setExpandedPreconditions] = useState({});
   const [statementVisible, setStatementVisible] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
 
-  const transactionQuery = useTransaction(id);
-  const statementQuery = useSettlementStatement(id);
-  const historyQuery = useTransactionHistory(id);
+  const {
+    transactionQuery,
+    statementQuery,
+    historyQuery,
+    transaction,
+    counterparties,
+    documents,
+    settlements,
+    totalDue,
+    myRole,
+    emailToName,
+    stepData,
+  } = useTransactionDetailViewModel(id);
   const resendCounterpartyEmail = useResendCounterpartyEmail();
-  const transaction = transactionQuery.data;
-
-  const stepData = useMemo(() => {
-    const stage = transaction?.current_stage || transaction?.status;
-    const currentStageIndex = STAGE_TO_CHEVRON[stage] ?? -1;
-
-    return STAGE_LABELS.map((label, index) => ({
-      label,
-      completed: index < currentStageIndex,
-      active: index === currentStageIndex,
-      renderIcon: (color) => {
-        const Icon = STEP_ICONS[index];
-        const iconSize = index === 0 ? 18 : index === STEP_ICONS.length - 1 ? 32 : 20;
-        const node = <Icon size={iconSize} color={color} />;
-        if (index === STEP_ICONS.length - 1) {
-          return <View style={{ marginLeft: 6 }}>{node}</View>;
-        }
-        return node;
-      },
-    }));
-  }, [transaction]);
 
   if (transactionQuery.isLoading) {
     return (
@@ -107,27 +66,6 @@ export default function TransactionDetailScreen() {
       </View>
     );
   }
-
-  const counterparties = transaction.counterparties || [];
-  const documents = transaction.documents || [];
-  const settlements = transaction.settlements || [];
-  const totalDue = settlements.reduce((sum, s) => {
-    if (s.amount_type === 'percentage') {
-      return sum + ((s.value || 0) / 100) * (transaction.amount || 0);
-    }
-    return sum + (s.actual_amount || s.value || 0);
-  }, 0);
-  const myRole = counterparties.find(
-    (item) => item.email?.toLowerCase() === userEmail?.toLowerCase(),
-  );
-
-  // Map emails to full names for settlement due_from / due_to display
-  const emailToName = {};
-  counterparties.forEach((cp) => {
-    if (cp.email) {
-      emailToName[cp.email.toLowerCase()] = `${cp.first_name || ''} ${cp.last_name || ''}`.trim();
-    }
-  });
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>

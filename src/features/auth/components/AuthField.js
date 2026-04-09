@@ -6,6 +6,22 @@ import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import useTheme from '../../../hooks/useTheme';
 
+function getFieldColors(theme, isFocused, hasValue) {
+  const borderColor = hasValue || isFocused
+    ? Colors.primary
+    : theme.isDark
+      ? 'rgba(255,255,255,0.2)'
+      : '#E3E3E3';
+
+  return {
+    borderColor,
+    backgroundColor: theme.inputBg,
+    textColor: theme.text,
+    placeholderColor: theme.textSecondary,
+    iconColor: theme.iconMuted,
+  };
+}
+
 export default function AuthField({
   control,
   name,
@@ -30,21 +46,23 @@ export default function AuthField({
       <Controller
         control={control}
         name={name}
-        render={({ field: { onChange, onBlur, value } }) => (
+        render={({ field: { onChange, onBlur, value } }) => {
+          const colors = getFieldColors(theme, isFocused, Boolean(value?.length));
+
+          return (
           <View
             style={[
               styles.inputWrap,
               {
-                borderColor: theme.isDark ? 'rgba(255,255,255,0.2)' : '#E3E3E3',
-                backgroundColor: theme.inputBg,
+                borderColor: colors.borderColor,
+                backgroundColor: colors.backgroundColor,
               },
-              (value?.length > 0) && styles.inputWrapFilled,
               isFocused && styles.inputWrapActive,
               isFocused && !theme.isDark && styles.inputWrapActiveShadow,
             ]}
           >
             <TextInput
-              style={[styles.input, { color: theme.text }]}
+              style={[styles.input, { color: colors.textColor }]}
               value={value}
               onChangeText={onChange}
               onBlur={() => {
@@ -53,7 +71,7 @@ export default function AuthField({
               }}
               onFocus={() => setIsFocused(true)}
               placeholder={placeholder}
-              placeholderTextColor={theme.textSecondary}
+              placeholderTextColor={colors.placeholderColor}
               secureTextEntry={secureTextEntry}
               keyboardType={keyboardType}
               autoCapitalize={autoCapitalize}
@@ -62,14 +80,15 @@ export default function AuthField({
             />
             {icon ? (
               <View style={styles.iconWrap}>
-                <Ionicons name={icon} size={18} color={theme.iconMuted} />
+                <Ionicons name={icon} size={18} color={colors.iconColor} />
               </View>
             ) : null}
             {trailing ? (
               <TouchableOpacity style={[styles.iconWrap, trailingContainerStyle]}>{trailing}</TouchableOpacity>
             ) : null}
           </View>
-        )}
+          );
+        }}
       />
     </View>
   );
@@ -87,14 +106,9 @@ const styles = StyleSheet.create({
   inputWrap: {
     height: 40,
     borderWidth: 1,
-    borderColor: '#E3E3E3',
     borderRadius: 5,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
-  },
-  inputWrapFilled: {
-    borderColor: Colors.primary,
   },
   inputWrapActive: {
     borderColor: Colors.primary,
