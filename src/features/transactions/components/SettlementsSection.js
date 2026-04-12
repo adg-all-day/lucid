@@ -1,14 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
-import { ChevronRightSmall, PendingStarIcon } from '../../../icons';
+import { CheckedSquareIcon, PendingStarIcon, UncheckedSquareIcon } from '../../../icons';
+import useUserStore from '../../../stores/userStore';
 import { formatAmount } from '../utils/formatters';
+
+const FALLBACK_PRECONDITIONS = [
+  { id: 'fallback-1', description: 'Artwork authenticity documents must be reviewed by both counterparties' },
+  { id: 'fallback-2', description: 'Delivery confirmation must be uploaded before acceptance is recorded' },
+  { id: 'fallback-3', description: 'Buyer inspection approval must be completed before disbursement' },
+];
 
 export default function SettlementsSection({
   settlements,
   transaction,
+  counterparties,
   emailToName,
   expandedPreconditions,
   setExpandedPreconditions,
@@ -17,6 +25,10 @@ export default function SettlementsSection({
   onOpenStatement,
   styles,
 }) {
+  const [previewChecks, setPreviewChecks] = useState({});
+  const userName = useUserStore((state) => state.name);
+  const userEmail = useUserStore((state) => state.email);
+
   if (settlements.length === 0) return null;
 
   return (
@@ -25,8 +37,22 @@ export default function SettlementsSection({
       <View style={[styles.settlementsCard, { backgroundColor: theme.primary10 }]}>
         {settlements.map((item, index) => {
           const preconditions = item.preconditions || item.conditions || [];
+          const fallbackParties = (counterparties || []).map((counterparty) => ({
+            name: `${counterparty.first_name || ''} ${counterparty.last_name || ''}`.trim() || counterparty.email || 'Counterparty',
+            email: counterparty.email || '',
+            completed: false,
+          }));
+          const displayPreconditions = (
+            preconditions.length > 0
+              ? preconditions
+              : FALLBACK_PRECONDITIONS.map((condition) => ({
+                ...condition,
+                parties: fallbackParties,
+              }))
+          );
           const preconditionsExpanded = expandedPreconditions[index] ?? false;
           const settlementCurrency = item.currency || transaction.currency;
+          const usingFallbackPreconditions = preconditions.length === 0;
 
           return (
             <View key={item.id || `settlement-${index}`}>
@@ -73,62 +99,92 @@ export default function SettlementsSection({
                 </View>
               </View>
 
-              {preconditions.length > 0 ? (
-                <View style={styles.preconditionsSection}>
-                  <TouchableOpacity
-                    style={styles.preconditionsToggle}
-                    onPress={() =>
-                      setExpandedPreconditions((prev) => ({
-                        ...prev,
-                        [index]: !prev[index],
-                      }))
-                    }
-                  >
-                    <Text style={[styles.preconditionsTitle, { color: isDark ? theme.text : '#2F6BC6' }]}>
-                      Disbursement Preconditions
-                    </Text>
-                    <Ionicons
-                      name={preconditionsExpanded ? 'chevron-up' : 'chevron-down'}
-                      size={16}
-                      color={isDark ? theme.icon : Colors.primary}
-                    />
-                  </TouchableOpacity>
+              <View style={styles.preconditionsSection}>
+                <TouchableOpacity
+                  style={styles.preconditionsToggle}
+                  onPress={() =>
+                    setExpandedPreconditions((prev) => ({
+                      ...prev,
+                      [index]: !prev[index],
+                    }))
+                  }
+                >
+                  <Text style={[styles.preconditionsTitle, { color: Colors.primary }]}>
+                    Disbursement Preconditions
+                  </Text>
+                  <Ionicons
+                    name={preconditionsExpanded ? 'chevron-up' : 'chevron-down'}
+                    size={16}
+                    color={Colors.primary}
+                  />
+                </TouchableOpacity>
 
-                  {preconditionsExpanded ? (
-                    <View style={[styles.preconditionsBox, { backgroundColor: theme.cardBg }]}>
-                      {preconditions.map((cond, conditionIndex) => (
-                        <View key={cond.id || `cond-${conditionIndex}`}>
-                          {conditionIndex > 0 ? <View style={styles.preconditionDivider} /> : null}
-                          <View style={styles.preconditionItem}>
-                            <Text style={[styles.preconditionNumber, { color: theme.text }]}>{conditionIndex + 1}.</Text>
-                            <View style={{ flex: 1 }}>
-                              <Text style={[styles.preconditionDesc, { color: theme.text }]}>
-                                {cond.description || cond.name || `Condition ${conditionIndex + 1}`}
-                              </Text>
-                              {(cond.parties || []).map((party, partyIndex) => (
-                                <View key={partyIndex} style={styles.preconditionPartyRow}>
-                                  <Text style={[styles.preconditionParty, { color: theme.text }]}>
-                                    {party.name || party}
-                                  </Text>
-                                  <View style={[styles.checkbox, { backgroundColor: theme.cardBg }]}>
-                                    {party.completed ? (
-                                      <Ionicons
-                                        name="checkmark"
-                                        size={12}
-                                        color={isDark ? theme.icon : Colors.primary}
-                                      />
-                                    ) : null}
-                                  </View>
-                                </View>
-                              ))}
-                            </View>
+                {preconditionsExpanded ? (
+                  <View
+                    style={[
+                      styles.preconditionsBox,
+                      {
+                        backgroundColor: isDark ? '#2B2B2B' : Colors.white,
+                        borderColor: Colors.primary,
+                      },
+                    ]}
+                  >
+                    {displayPreconditions.map((cond, conditionIndex) => (
+                      <View key={cond.id || `cond-${conditionIndex}`}>
+                        {conditionIndex > 0 ? <View style={styles.preconditionDivider} /> : null}
+                        <View style={styles.preconditionItem}>
+                          <Text style={[styles.preconditionNumber, { color: theme.text }]}>
+                            {conditionIndex + 1}.
+                          </Text>
+                          <View style={styles.preconditionContent}>
+                            <Text style={[styles.preconditionDesc, { color: theme.text }]}>
+                              {cond.description || cond.name || `Condition ${conditionIndex + 1}`}
+                            </Text>
+                            {(cond.parties || []).map((party, partyIndex) => (
+                              (() => {
+                                const partyLabel = party.name || party.email || party;
+                                const partyEmail = typeof party === 'object' ? party.email || '' : '';
+                                const isCurrentUser =
+                                  (partyEmail && userEmail && partyEmail.toLowerCase() === userEmail.toLowerCase()) ||
+                                  (partyLabel && userName && partyLabel.trim().toLowerCase() === userName.trim().toLowerCase());
+                                const key = `${index}-${conditionIndex}-${partyIndex}`;
+                                const isChecked = usingFallbackPreconditions
+                                  ? !!previewChecks[key]
+                                  : !!party.completed;
+
+                                return (
+                              <TouchableOpacity
+                                key={`${cond.id || conditionIndex}-party-${partyIndex}`}
+                                style={styles.preconditionPartyRow}
+                                activeOpacity={usingFallbackPreconditions && isCurrentUser ? 0.7 : 1}
+                                disabled={!usingFallbackPreconditions || !isCurrentUser}
+                                onPress={() => {
+                                  if (!usingFallbackPreconditions || !isCurrentUser) return;
+                                  setPreviewChecks((current) => ({
+                                    ...current,
+                                    [key]: !current[key],
+                                  }));
+                                }}
+                              >
+                                <Text style={[styles.preconditionParty, { color: theme.text }]}>
+                                  {partyLabel}
+                                </Text>
+                                {isChecked ? (
+                                  <CheckedSquareIcon size={16} />
+                                ) : (
+                                  <UncheckedSquareIcon size={16} />
+                                )}
+                              </TouchableOpacity>
+                                );
+                              })()
+                            ))}
                           </View>
                         </View>
-                      ))}
-                    </View>
-                  ) : null}
-                </View>
-              ) : null}
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
 
               {index < settlements.length - 1 ? <View style={styles.settlementDivider} /> : null}
             </View>
@@ -137,10 +193,7 @@ export default function SettlementsSection({
       </View>
 
       <TouchableOpacity style={styles.viewStatementLink} onPress={onOpenStatement}>
-        <View style={styles.inlineLinkRow}>
-          <Text style={styles.viewStatementText}>View Settlement Statement</Text>
-          <ChevronRightSmall />
-        </View>
+        <Text style={styles.viewStatementText}>View Settlement Statement</Text>
       </TouchableOpacity>
     </View>
   );

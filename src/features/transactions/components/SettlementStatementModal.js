@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import useTheme from '../../../hooks/useTheme';
+import ModalBlurBackdrop from '../../../components/ModalBlurBackdrop';
 
 const BLUE = Colors.primary;
 const BLUE_BG = Colors.primary10;
@@ -22,8 +23,10 @@ export default function SettlementStatementModal({
   transaction,
   statementData,
   loading,
+  blurTarget,
 }) {
   const theme = useTheme();
+  const containerBg = theme.isDark ? '#2B2B2B' : theme.modalBg;
   const currency = transaction?.currency || 'USD';
   const items = statementData?.settlements || settlements || [];
 
@@ -68,7 +71,8 @@ export default function SettlementStatementModal({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={[styles.container, { backgroundColor: theme.modalBg }]}>
+        <ModalBlurBackdrop isDark={theme.isDark} blurTarget={blurTarget} />
+        <View style={[styles.container, { backgroundColor: containerBg }]}>
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={onClose} style={styles.backBtn}>
@@ -160,10 +164,10 @@ export default function SettlementStatementModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
+    overflow: 'hidden',
   },
   container: {
     backgroundColor: Colors.white,

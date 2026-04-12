@@ -4,11 +4,11 @@ import Svg, { Path } from 'react-native-svg';
 import Text from '../components/StyledText';
 import Colors from '../constants/colors';
 
-const MAX_CHEVRON_WIDTH = 73;
-const MIN_CHEVRON_WIDTH = 60;
+const MAX_CHEVRON_WIDTH = 75;
+const MIN_CHEVRON_WIDTH = 61;
 const MAX_NOTCH = 12;
 const MIN_NOTCH = 10;
-const CHEVRON_ASPECT_RATIO = 1.925;
+const CHEVRON_ASPECT_RATIO = 2.05;
 
 function ChevronShape({ fill, stroke, strokeWidth = 0, opacity = 1, isFirst, isLast, width, height, notch }) {
   const w = width;
@@ -108,7 +108,9 @@ export default function StepperChevron({ steps }) {
               style={[
                 styles.chevronWrapper,
                 { width: chevronWidth, height: chevronHeight },
-                index > 0 && { marginLeft: -(notch - 4) },
+                index === 1 && { marginLeft: -(notch - 12) },
+                index === 1 && { marginRight: -(notch - 10) },
+                index > 0 && { marginLeft: -(notch - 10) },
               ]}
             >
               <ChevronShape
@@ -141,6 +143,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    justifyContent: 'center',
     marginBottom: 16,
   },
   stepItem: {
@@ -167,7 +170,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: Colors.gray,
     textAlign: 'center',
-    marginTop: 2,
+    marginTop: 6,
     width: '100%',
   },
 });

@@ -88,6 +88,24 @@ export const formatDate = (dateStr) => {
 };
 
 /**
+ * Compact date format used under the detail stepper.
+ * Example: "Jun. 23, 2024 (8:00AM)"
+ */
+export const formatStepperDate = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const months = [
+    'Jan.', 'Feb.', 'Mar.', 'Apr.', 'May.', 'Jun.',
+    'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.',
+  ];
+  const h = d.getHours();
+  const m = d.getMinutes();
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} (${h % 12 || 12}:${m
+    .toString()
+    .padStart(2, '0')}${h >= 12 ? 'PM' : 'AM'})`;
+};
+
+/**
  * Short date for the transaction list cards.
  * Example: "Fri. Jan 12, 2026"
  */

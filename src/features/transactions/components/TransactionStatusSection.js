@@ -5,7 +5,6 @@ import Colors from '../../../constants/colors';
 import {
   ActionRequiredIcon,
   AwaitingDeliveryIcon,
-  ChevronRightSmall,
   StepperChevron,
 } from '../../../icons';
 import { formatActionLabel, getStatusLabel } from '../utils/formatters';
@@ -51,10 +50,7 @@ export default function TransactionStatusSection({
       </View>
 
       <TouchableOpacity style={styles.historyLink} onPress={onOpenHistory}>
-        <View style={styles.inlineLinkRow}>
-          <Text style={styles.historyLinkText}>Transaction History</Text>
-          <ChevronRightSmall />
-        </View>
+        <Text style={styles.historyLinkText}>Transaction History</Text>
       </TouchableOpacity>
     </View>
   );

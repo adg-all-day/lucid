@@ -3,14 +3,14 @@
 // Uses react-hook-form's useFormContext so it stays in sync with the parent form.
 
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput, Platform } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { useFormContext, Controller } from 'react-hook-form';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import useTheme from '../../../hooks/useTheme';
 import OutlinedField from '../../../components/OutlinedField';
+import CalendarDatePickerModal from '../../../components/CalendarDatePickerModal';
 import PickerModal from '../../../components/PickerModal';
 import { TRANSACTION_TYPES, CURRENCIES, getCurrencyDisplay, formatType, formatDate } from '../utils/constants';
 
@@ -27,7 +27,7 @@ export default function TransactionBasicFields() {
   const currency = watch('currency');
   const closingDate = watch('closingDate');
 
-  const handleDateChange = (event, selectedDate) => {
+  const handleDateChange = (selectedDate) => {
     setShowDatePicker(false);
     if (selectedDate) {
       setValue('closingDate', selectedDate);
@@ -108,15 +108,13 @@ export default function TransactionBasicFields() {
         </View>
       </View>
 
-      {showDatePicker && (
-        <DateTimePicker
-          value={closingDate || new Date()}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleDateChange}
-          minimumDate={new Date()}
-        />
-      )}
+      <CalendarDatePickerModal
+        visible={showDatePicker}
+        value={closingDate || new Date()}
+        minimumDate={new Date()}
+        onCancel={() => setShowDatePicker(false)}
+        onConfirm={handleDateChange}
+      />
 
       {/* Picker modals */}
       <PickerModal

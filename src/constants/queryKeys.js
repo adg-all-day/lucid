@@ -1,5 +1,6 @@
 export const queryKeys = {
-  transactions: ['transactions'],
+  transactionsRoot: ['transactions'],
+  transactions: (params = {}) => ['transactions', params],
   transaction: (id) => ['transaction', id],
   transactionHistory: (id) => ['transactionHistory', id],
   settlementStatement: (id) => ['settlementStatement', id],

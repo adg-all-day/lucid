@@ -19,6 +19,7 @@ export default function TransactionSummarySection({
   myRole,
   theme,
   isDark,
+  onOpenActions,
   styles,
 }) {
   return (
@@ -42,6 +43,7 @@ export default function TransactionSummarySection({
               borderColor: isDark ? theme.actionButtonBg : Colors.border,
             },
           ]}
+          onPress={onOpenActions}
         >
           <Text style={[styles.actionsBtnText, { color: isDark ? theme.actionButtonText : Colors.primary }]}>
             Actions
@@ -69,14 +71,17 @@ export default function TransactionSummarySection({
 
         <Text
           style={[styles.descriptionText, { color: Colors.white }]}
-          numberOfLines={2}
+          numberOfLines={1}
+          ellipsizeMode="tail"
         >
           {transaction.description}
         </Text>
 
         <View style={styles.closingRow}>
           <View style={styles.closingLeft}>
-            <CalendarIcon size={16} color={Colors.white} />
+            <View style={{ marginTop: -4 }}>
+              <CalendarIcon size={20} color={Colors.white} />
+            </View>
             <View style={{ marginLeft: 8 }}>
               <Text style={[styles.closingDateValue, { color: Colors.white }]}>
                 {formatDate(transaction.closing_date)}

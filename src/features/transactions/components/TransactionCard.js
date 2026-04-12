@@ -22,8 +22,6 @@ export default function TransactionCard({ item, onPress }) {
   const theme = useTheme();
   const isDark = theme.isDark;
   const daysLeft = getDaysLeft(item.closing_date);
-  const counterpartyName = `${item.counter_party_first_name} ${item.counter_party_last_name}`;
-  const extraCount = (item.number_of_counterparties || 1) - 1;
 
   return (
     <View>
@@ -32,19 +30,15 @@ export default function TransactionCard({ item, onPress }) {
           {/* Left side: type, description, amount, role, counterparty, closing date */}
           <View style={styles.transactionLeft}>
             <Text style={[styles.transactionType, { color: isDark ? theme.text : Colors.primary60 }]}>{formatType(item.type)}</Text>
-            <Text style={[styles.transactionDesc, { color: theme.textSecondary }]}>{item.description}</Text>
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={[styles.transactionDesc, { color: theme.textSecondary }]}
+            >
+              {item.description}
+            </Text>
             <Text style={[styles.transactionAmount, { color: theme.textSecondary }]}>
               {formatAmount(item.amount, item.currency)}
-            </Text>
-            <Text style={[styles.transactionMeta, { color: theme.textSecondary }]}>
-              Role:{' '}
-              {item.role
-                ? item.role.charAt(0).toUpperCase() + item.role.slice(1)
-                : ''}
-            </Text>
-            <Text style={[styles.transactionMeta, { color: theme.textSecondary }]}>
-              {counterpartyName}
-              {extraCount > 0 ? ` + ${extraCount} more` : ''}
             </Text>
             <Text style={[styles.transactionMeta, { color: theme.textSecondary }]}>
               Closing: {formatClosingDate(item.closing_date)}

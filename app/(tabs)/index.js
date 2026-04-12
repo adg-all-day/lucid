@@ -1,5 +1,5 @@
-import TransactionsHomeScreen from '../../src/features/transactions/screens/TransactionsHomeScreen';
+import DashboardHomeScreen from '../../src/features/transactions/screens/DashboardHomeScreen';
 
 export default function Home() {
-  return <TransactionsHomeScreen />;
+  return <DashboardHomeScreen />;
 }

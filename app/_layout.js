@@ -29,7 +29,13 @@ export default function RootLayout() {
     if (firstSegment === 'splash') return;
 
     const onAuthScreen = AUTH_ROUTES.includes(firstSegment);
-    const onProtectedScreen = firstSegment === '(tabs)' || firstSegment === 'new-transaction' || firstSegment === 'transaction';
+    const onProtectedScreen =
+      firstSegment === '(tabs)' ||
+      firstSegment === 'new-transaction' ||
+      firstSegment === 'transaction' ||
+      firstSegment === 'transaction-statement' ||
+      firstSegment === 'payment-details' ||
+      firstSegment === 'transaction-history';
 
     if (!isAuthenticated && onProtectedScreen) {
       router.replace('/log-in');
@@ -71,6 +77,9 @@ export default function RootLayout() {
               contentStyle: { backgroundColor: 'transparent' },
             }}
           />
+          <Stack.Screen name="transaction-statement/[id]" />
+          <Stack.Screen name="payment-details/[id]" />
+          <Stack.Screen name="transaction-history/[id]" />
         </Stack>
       </QueryProvider>
     </GestureHandlerRootView>

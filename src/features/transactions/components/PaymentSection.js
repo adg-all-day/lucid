@@ -1,8 +1,10 @@
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
-import { ChevronRightSmall, TimeQuarterIcon } from '../../../icons';
+import { TimeQuarterIcon } from '../../../icons';
+import useUserStore from '../../../stores/userStore';
 import { formatAmount } from '../utils/formatters';
 
 export default function PaymentSection({
@@ -13,6 +15,10 @@ export default function PaymentSection({
   isDark,
   styles,
 }) {
+  const router = useRouter();
+  const userName = useUserStore((state) => state.name);
+  const resolvedName = userName || 'Current User';
+
   return (
     <View style={styles.sectionContainer}>
       <Text style={[styles.sectionTitle, { color: isDark ? theme.text : Colors.primary }]}>Payment</Text>
@@ -27,7 +33,7 @@ export default function PaymentSection({
           </View>
         </View>
         <Text style={[styles.paymentLabel, { color: theme.text }]}>
-          Balance Due from [{myRole ? myRole.role.charAt(0).toUpperCase() + myRole.role.slice(1) : 'Buyer'}]:
+          Balance Due from {resolvedName}:
         </Text>
 
         <TouchableOpacity style={styles.paymentBtn}>
@@ -38,11 +44,8 @@ export default function PaymentSection({
           Your payment will be held in an Escrow Account with one of our Partner Banks until you authorize disbursement to the relevant counterparty/counterparties.
         </Text>
 
-        <TouchableOpacity>
-          <View style={styles.inlineLinkRow}>
-            <Text style={styles.paymentDetailsLink}>View Payment Details</Text>
-            <ChevronRightSmall />
-          </View>
+        <TouchableOpacity onPress={() => router.push(`/payment-details/${transaction.id}`)}>
+          <Text style={styles.paymentDetailsLink}>View Payment Details</Text>
         </TouchableOpacity>
       </View>
     </View>

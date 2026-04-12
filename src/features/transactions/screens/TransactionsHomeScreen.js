@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   View,
@@ -8,20 +8,22 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Pressable,
   useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Text from '../../../components/StyledText';
 import Header from '../../../components/Header';
+import CalendarDatePickerModal from '../../../components/CalendarDatePickerModal';
 import Colors from '../../../constants/colors';
 import useUserStore from '../../../stores/userStore';
 import TransactionStats from '../components/TransactionStats';
-import ActivityLog from '../components/ActivityLog';
 import TransactionCard from '../components/TransactionCard';
-import { SearchIcon } from '../../../icons';
+import TransactionsSortMenu from '../components/TransactionsSortMenu';
+import { FilterSelectedDot, SearchIcon, SortVerticalIcon } from '../../../icons';
 import useTransactionsHomeViewModel from '../hooks/useTransactionsHomeViewModel';
-import { TABS } from '../utils/constants';
+import { DATE_FILTER_OPTIONS, TABS } from '../utils/constants';
 import useUiStore from '../../../stores/uiStore';
 import useTheme from '../../../hooks/useTheme';
 
@@ -37,11 +39,22 @@ export default function TransactionsHomeScreen() {
   const setActiveTab = useUiStore((state) => state.setActiveTab);
   const setSearchText = useUiStore((state) => state.setSearchText);
   const [tabLayouts, setTabLayouts] = useState({});
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [dateFilter, setDateFilter] = useState('all');
+  const [sortField, setSortField] = useState('created_at');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [customRange, setCustomRange] = useState({ start: null, end: null });
+  const [pendingCustomStart, setPendingCustomStart] = useState(null);
+  const [pickerTarget, setPickerTarget] = useState(null);
+  const [transactionsViewportHeight, setTransactionsViewportHeight] = useState(0);
+  const [transactionsContentHeight, setTransactionsContentHeight] = useState(0);
+  const [isTransactionsListInteracting, setIsTransactionsListInteracting] = useState(false);
   const underlineLeft = useRef(new Animated.Value(0)).current;
   const underlineWidth = useRef(new Animated.Value(0)).current;
+  const transactionsScrollY = useRef(new Animated.Value(0)).current;
 
   const {
-    activityQuery,
     transactionsQuery,
     filteredTransactions,
     stats,
@@ -50,7 +63,66 @@ export default function TransactionsHomeScreen() {
     activeTab,
     searchText,
     screenWidth,
+    dateFilter,
+    customRange,
+    sortField,
+    sortDirection,
   );
+
+  const handleSelectDateFilter = (value) => {
+    if (value === 'custom') {
+      setShowFilterMenu(false);
+      setPendingCustomStart(customRange.start);
+      setPickerTarget('start');
+      return;
+    }
+
+    setDateFilter(value);
+    setShowFilterMenu(false);
+  };
+
+  const handleSelectSortField = (field) => {
+    setSortField(field);
+  };
+
+  const handleSelectSortDirection = (direction) => {
+    setSortDirection(direction);
+  };
+
+  const handleDatePickerChange = (selectedDate) => {
+    if (!selectedDate) {
+      setPickerTarget(null);
+      setPendingCustomStart(null);
+      return;
+    }
+
+    if (pickerTarget === 'start') {
+      setPendingCustomStart(selectedDate);
+      setPickerTarget('end');
+      return;
+    }
+
+    setCustomRange({
+      start: pendingCustomStart || selectedDate,
+      end: selectedDate,
+    });
+    setDateFilter('custom');
+    setPendingCustomStart(null);
+    setPickerTarget(null);
+  };
+
+  const handleClearTransactionsControls = () => {
+    setSearchText('');
+    setShowFilterMenu(false);
+    setShowSortMenu(false);
+    setDateFilter('all');
+    setSortField('created_at');
+    setSortDirection('desc');
+    setCustomRange({ start: null, end: null });
+    setPendingCustomStart(null);
+    setPickerTarget(null);
+    setActiveTab('All Transactions');
+  };
 
   useEffect(() => {
     const activeLayout = tabLayouts[activeTab];
@@ -72,6 +144,43 @@ export default function TransactionsHomeScreen() {
     ]).start();
   }, [activeTab, tabLayouts, underlineLeft, underlineWidth]);
 
+  const showTransactionsScrollbar = transactionsContentHeight > transactionsViewportHeight;
+  const maxTransactionsScroll = Math.max(transactionsContentHeight - transactionsViewportHeight, 1);
+  const transactionsThumbHeight = showTransactionsScrollbar
+    ? Math.max((transactionsViewportHeight / transactionsContentHeight) * transactionsViewportHeight * 0.5, 14)
+    : 0;
+  const transactionsThumbTravel = Math.max(transactionsViewportHeight - transactionsThumbHeight, 0);
+  const transactionsThumbTranslateY = useMemo(
+    () =>
+      transactionsScrollY.interpolate({
+        inputRange: [0, maxTransactionsScroll],
+        outputRange: [0, transactionsThumbTravel],
+        extrapolate: 'clamp',
+      }),
+    [transactionsScrollY, maxTransactionsScroll, transactionsThumbTravel],
+  );
+  const disableOuterScroll = isTransactionsListInteracting;
+  const showClearTransactionsControls =
+    activeTab !== 'All Transactions' ||
+    searchText.trim().length > 0 ||
+    dateFilter !== 'all' ||
+    sortField !== 'created_at' ||
+    sortDirection !== 'desc';
+  const handleTransactionsScroll = ({ nativeEvent }) => {
+    const { contentOffset, contentSize, layoutMeasurement } = nativeEvent;
+    const threshold = 180;
+    const reachedBottom =
+      contentOffset.y + layoutMeasurement.height >= contentSize.height - threshold;
+
+    if (
+      reachedBottom &&
+      transactionsQuery.hasNextPage &&
+      !transactionsQuery.isFetchingNextPage
+    ) {
+      transactionsQuery.fetchNextPage();
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Header
@@ -81,9 +190,11 @@ export default function TransactionsHomeScreen() {
       <ScrollView
         style={styles.body}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!disableOuterScroll}
         refreshControl={
           <RefreshControl
-            refreshing={transactionsQuery.isRefetching}
+            enabled={!disableOuterScroll}
+            refreshing={!disableOuterScroll && transactionsQuery.isRefetching}
             onRefresh={() => transactionsQuery.refetch()}
             tintColor={Colors.primary}
           />
@@ -116,8 +227,14 @@ export default function TransactionsHomeScreen() {
                   compactActions && styles.iconButtonCompact,
                   { backgroundColor: theme.cardBg },
                 ]}
+                onPress={() => {
+                  setShowSortMenu(false);
+                  setShowFilterMenu((current) => !current);
+                }}
               >
-                <Ionicons name="filter" size={22} color={theme.iconMuted} />
+                <View style={styles.filterIconWrap}>
+                  <Ionicons name="filter" size={22} color={theme.iconMuted} />
+                </View>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
@@ -125,9 +242,27 @@ export default function TransactionsHomeScreen() {
                   compactActions && styles.iconButtonCompact,
                   { backgroundColor: theme.cardBg },
                 ]}
+                onPress={() => {
+                  setShowFilterMenu(false);
+                  setShowSortMenu(true);
+                }}
               >
-                <Ionicons name="swap-vertical" size={20} color={theme.iconMuted} />
+                <View style={styles.sortIconWrap}>
+                  <SortVerticalIcon width={11} height={14} color={theme.iconMuted} />
+                </View>
               </TouchableOpacity>
+              {showClearTransactionsControls ? (
+                <TouchableOpacity
+                  style={[
+                    styles.clearButton,
+                    compactActions && styles.clearButtonCompact,
+                    { backgroundColor: theme.cardBg },
+                  ]}
+                  onPress={handleClearTransactionsControls}
+                >
+                  <Text style={[styles.clearButtonText, { color: theme.textSecondary }]}>Clear</Text>
+                </TouchableOpacity>
+              ) : null}
               <TouchableOpacity
                 style={[styles.newBtn, compactActions && styles.newBtnCompact]}
                 onPress={() => router.push('/new-transaction')}
@@ -135,6 +270,50 @@ export default function TransactionsHomeScreen() {
                 <Text style={styles.newBtnText}>New +</Text>
               </TouchableOpacity>
             </View>
+
+            {showFilterMenu ? (
+              <Pressable style={styles.filterMenuOverlay} onPress={() => setShowFilterMenu(false)}>
+                <Pressable
+                  style={[styles.filterMenu, { backgroundColor: theme.cardBg }]}
+                  onPress={(event) => event.stopPropagation()}
+                >
+                  {DATE_FILTER_OPTIONS.map((option) => {
+                    const selected = dateFilter === option.value;
+                    return (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={styles.filterOption}
+                        onPress={() => handleSelectDateFilter(option.value)}
+                      >
+                        {selected ? (
+                          <FilterSelectedDot size={20} />
+                        ) : (
+                          <View
+                            style={[
+                              styles.filterRadioOuter,
+                              { borderColor: '#D0D0D0' },
+                            ]}
+                          />
+                        )}
+                        <Text style={[styles.filterOptionText, { color: theme.text }]}>
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </Pressable>
+              </Pressable>
+            ) : null}
+
+            <TransactionsSortMenu
+              visible={showSortMenu}
+              theme={theme}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onClose={() => setShowSortMenu(false)}
+              onSelectSortField={handleSelectSortField}
+              onSelectSortDirection={handleSelectSortDirection}
+            />
 
             <View style={styles.tabsWrap}>
               <ScrollView
@@ -187,32 +366,90 @@ export default function TransactionsHomeScreen() {
             </View>
             <View style={styles.tabDivider} />
 
-            {transactionsQuery.isLoading ? (
-              <ActivityIndicator
-                size="large"
-                color={Colors.primary}
-                style={styles.loading}
-              />
-            ) : filteredTransactions.length === 0 ? (
-              <Text style={[styles.emptyText, { color: theme.text }]}>No transactions found</Text>
-            ) : (
-              filteredTransactions.map((item) => (
-                <TransactionCard
-                  key={item.id}
-                  item={item}
-                  onPress={() => router.push(`/transaction/${item.id}`)}
+            <View
+              style={styles.transactionsListViewport}
+              onLayout={(event) => setTransactionsViewportHeight(event.nativeEvent.layout.height)}
+            >
+              {transactionsQuery.isLoading ? (
+                <ActivityIndicator
+                  size="large"
+                  color={Colors.primary}
+                  style={styles.loading}
                 />
-              ))
-            )}
+              ) : filteredTransactions.length === 0 ? (
+                <Text style={[styles.emptyText, { color: theme.text }]}>No transactions found</Text>
+              ) : (
+                <Animated.ScrollView
+                  nestedScrollEnabled
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.transactionsListContent}
+                  onContentSizeChange={(_, height) => setTransactionsContentHeight(height)}
+                  onTouchStart={() => setIsTransactionsListInteracting(true)}
+                  onTouchEnd={() => setIsTransactionsListInteracting(false)}
+                  onTouchCancel={() => setIsTransactionsListInteracting(false)}
+                  onScroll={Animated.event(
+                    [{ nativeEvent: { contentOffset: { y: transactionsScrollY } } }],
+                    {
+                      useNativeDriver: true,
+                      listener: handleTransactionsScroll,
+                    },
+                  )}
+                  onScrollBeginDrag={() => setIsTransactionsListInteracting(true)}
+                  onScrollEndDrag={() => setIsTransactionsListInteracting(false)}
+                  onMomentumScrollBegin={() => setIsTransactionsListInteracting(true)}
+                  onMomentumScrollEnd={() => setIsTransactionsListInteracting(false)}
+                  scrollEventThrottle={16}
+                >
+                  {filteredTransactions.map((item) => (
+                    <TransactionCard
+                      key={item.id}
+                      item={item}
+                      onPress={() => router.push(`/transaction/${item.id}`)}
+                    />
+                  ))}
+                  {transactionsQuery.isFetchingNextPage ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={Colors.primary}
+                      style={styles.transactionsNextPageLoader}
+                    />
+                  ) : null}
+                </Animated.ScrollView>
+              )}
+              {showTransactionsScrollbar ? (
+                <View pointerEvents="none" style={styles.transactionsScrollbarTrack}>
+                  <Animated.View
+                    style={[
+                      styles.transactionsScrollbarThumb,
+                      {
+                        height: transactionsThumbHeight,
+                        transform: [{ translateY: transactionsThumbTranslateY }],
+                      },
+                    ]}
+                  />
+                </View>
+              ) : null}
+            </View>
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <ActivityLog activityLog={activityQuery.data ?? []} />
         </View>
 
         <View style={styles.footerGap} />
       </ScrollView>
+
+      <CalendarDatePickerModal
+        visible={Boolean(pickerTarget)}
+        value={
+          pickerTarget === 'end'
+            ? customRange.end || pendingCustomStart || new Date()
+            : customRange.start || new Date()
+        }
+        minimumDate={pickerTarget === 'end' ? pendingCustomStart || undefined : undefined}
+        onCancel={() => {
+          setPickerTarget(null);
+          setPendingCustomStart(null);
+        }}
+        onConfirm={handleDatePickerChange}
+      />
     </View>
   );
 }
@@ -248,6 +485,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginBottom: 10,
+    position: 'relative',
+    zIndex: 3,
   },
   searchBar: {
     flex: 1,
@@ -289,6 +528,33 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
   },
+  filterIconWrap: {
+    transform: [{ scaleX: 0.8 }],
+  },
+  sortIconWrap: {
+    transform: [{ scaleX: -1 }],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  clearButton: {
+    minWidth: 44,
+    height: 26,
+    borderWidth: 0.5,
+    borderColor: '#979797',
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+    flexShrink: 0,
+  },
+  clearButtonCompact: {
+    minWidth: 40,
+    paddingHorizontal: 6,
+  },
+  clearButtonText: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
   newBtn: {
     backgroundColor: Colors.primary,
     borderWidth: 2,
@@ -308,6 +574,51 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontWeight: '500',
     fontSize: 10,
+  },
+  filterMenuOverlay: {
+    position: 'absolute',
+    top: 44,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+  },
+  filterMenu: {
+    width: 180,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#E6E6E6',
+    alignSelf: 'flex-start',
+    marginLeft: 112,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  filterOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 9,
+  },
+  filterRadioOuter: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterRadioInner: {
+    width: 20,
+    height: 20,
+  },
+  filterOptionText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   tabsWrap: {
     position: 'relative',
@@ -354,6 +665,31 @@ const styles = StyleSheet.create({
     color: Colors.grayMedium,
     fontSize: 14,
     marginVertical: 40,
+  },
+  transactionsListViewport: {
+    maxHeight: 330,
+    position: 'relative',
+  },
+  transactionsListContent: {
+    paddingBottom: 4,
+    paddingRight: 8,
+  },
+  transactionsNextPageLoader: {
+    marginVertical: 10,
+  },
+  transactionsScrollbarTrack: {
+    position: 'absolute',
+    top: 6,
+    right: -6,
+    bottom: 6,
+    width: 3,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0, 0, 0, 0.06)',
+  },
+  transactionsScrollbarThumb: {
+    width: 3,
+    borderRadius: 999,
+    backgroundColor: '#979797',
   },
   footerGap: {
     height: 30,

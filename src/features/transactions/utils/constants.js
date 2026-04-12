@@ -7,20 +7,29 @@
 // The tabs shown at the top of the transaction list
 export const TABS = [
   'All Transactions',
-  'Staging',
-  'Signed',
-  'Disbursed',
+  'Action Required',
+  'Open',
   'Closed',
 ];
 
-// Which API statuses belong under each tab. null means "show everything".
-export const STATUS_MAP = {
-  'All Transactions': null,
-  'Staging': ['STAGING', 'DRAFT'],
-  'Signed': ['AWAITING_FUNDS', 'AWAITING_SIGNATURES'],
-  'Disbursed': ['AWAITING_DISBURSEMENT'],
-  'Closed': ['VOIDED', 'COMPLETED', 'CLOSED'],
-};
+export const DATE_FILTER_OPTIONS = [
+  { value: 'all', label: 'All time' },
+  { value: '24h', label: 'Last 24 hours' },
+  { value: '7d', label: 'Last 7 days' },
+  { value: '30d', label: 'Last 30 days' },
+  { value: '6m', label: 'Last 6 months' },
+  { value: '12m', label: 'Last 12 months' },
+  { value: 'custom', label: 'Custom' },
+];
+
+export const SORT_FIELD_OPTIONS = [
+  { value: 'type', label: 'Transaction type' },
+  { value: 'description', label: 'Transaction description' },
+  { value: 'amount', label: 'Transaction value' },
+  { value: 'closing_date', label: 'Closing date' },
+  { value: 'created_at', label: 'Creation date' },
+  { value: 'status', label: 'Status' },
+];
 
 // Handy groupings for the stats cards
 export const OPEN_STATUSES = [
@@ -32,6 +41,14 @@ export const OPEN_STATUSES = [
 ];
 
 export const CLOSED_STATUSES = ['VOIDED', 'COMPLETED', 'CLOSED'];
+
+// Which API statuses belong under each tab. null means "show everything".
+export const STATUS_MAP = {
+  'All Transactions': null,
+  'Action Required': ['AWAITING_SIGNATURES', 'AWAITING_FUNDS'],
+  Open: OPEN_STATUSES,
+  'Closed': ['VOIDED', 'CLOSED'],
+};
 
 // -- Transaction Detail stepper --
 

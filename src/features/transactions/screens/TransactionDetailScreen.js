@@ -1,22 +1,29 @@
 import React, { useState } from 'react';
 import {
-  Alert,
   View,
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { BlurTargetView } from 'expo-blur';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import Text from '../../../components/StyledText';
-import Header from '../../../components/Header';
 import Colors from '../../../constants/colors';
 import useTheme from '../../../hooks/useTheme';
-import useUserStore from '../../../stores/userStore';
 import {
+  useCompleteTransaction,
+  useCopyTransaction,
+  useDeleteTransaction,
   useResendCounterpartyEmail,
+  useSubmitTransaction,
+  useVoidTransaction,
 } from '../../../api/queries/transactions';
-import SettlementStatementModal from '../components/SettlementStatementModal';
-import TransactionHistoryModal from '../components/TransactionHistoryModal';
+import TransactionActionsMenu from '../components/TransactionActionsMenu';
+import TransactionConfirmModal from '../components/TransactionConfirmModal';
+import TransactionOverlayShell from '../components/TransactionOverlayShell';
+import TransactionResultModal from '../components/TransactionResultModal';
 import TransactionSummarySection from '../components/TransactionSummarySection';
 import TransactionStatusSection from '../components/TransactionStatusSection';
 import CounterpartiesSection from '../components/CounterpartiesSection';
@@ -28,18 +35,30 @@ import useTransactionDetailViewModel from '../hooks/useTransactionDetailViewMode
 
 export default function TransactionDetailScreen() {
   const { id } = useLocalSearchParams();
+  const transactionId = Number(id);
+  const router = useRouter();
   const theme = useTheme();
   const isDark = theme.isDark;
-  const userName = useUserStore((state) => state.name);
   const [amountHidden, setAmountHidden] = useState(false);
   const [expandedPreconditions, setExpandedPreconditions] = useState({});
-  const [statementVisible, setStatementVisible] = useState(false);
-  const [historyVisible, setHistoryVisible] = useState(false);
+  const [actionsMenuVisible, setActionsMenuVisible] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    confirmLabel: 'Confirm',
+    action: null,
+    loading: false,
+  });
+  const [resultModal, setResultModal] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    onClose: null,
+  });
 
   const {
     transactionQuery,
-    statementQuery,
-    historyQuery,
     transaction,
     counterparties,
     documents,
@@ -50,6 +69,43 @@ export default function TransactionDetailScreen() {
     stepData,
   } = useTransactionDetailViewModel(id);
   const resendCounterpartyEmail = useResendCounterpartyEmail();
+  const deleteTransaction = useDeleteTransaction();
+  const voidTransaction = useVoidTransaction();
+  const completeTransaction = useCompleteTransaction();
+  const copyTransaction = useCopyTransaction();
+  const submitTransaction = useSubmitTransaction();
+  const [blurTargetRef, setBlurTargetRef] = useState(null);
+
+  const showResultModal = (title, message, onClose = null) => {
+    setResultModal({
+      visible: true,
+      title,
+      message,
+      onClose,
+    });
+  };
+
+  const showConfirmModal = (title, message, action, confirmLabel = 'Confirm') => {
+    setConfirmModal({
+      visible: true,
+      title,
+      message,
+      confirmLabel,
+      action,
+      loading: false,
+    });
+  };
+
+  const closeConfirmModal = () => {
+    setConfirmModal({
+      visible: false,
+      title: '',
+      message: '',
+      confirmLabel: 'Confirm',
+      action: null,
+      loading: false,
+    });
+  };
 
   if (transactionQuery.isLoading) {
     return (
@@ -69,112 +125,295 @@ export default function TransactionDetailScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header name={userName} />
+      <BlurTargetView ref={setBlurTargetRef} style={styles.blurTarget}>
+        <View style={[styles.detailHeader, { backgroundColor: theme.headerBg }]}>
+          <View style={styles.detailHeaderContent}>
+            <View style={styles.detailHeaderSide}>
+              <TouchableOpacity
+                style={styles.detailHeaderBackButton}
+                onPress={() => router.back()}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="arrow-back-circle-outline" size={28} color={Colors.white} />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.detailHeaderTitle}>Transaction Details</Text>
+            <View style={styles.detailHeaderSide} />
+          </View>
+        </View>
 
-      <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
-        <TransactionSummarySection
-          transaction={transaction}
-          amountHidden={amountHidden}
-          setAmountHidden={setAmountHidden}
-          myRole={myRole}
-          theme={theme}
-          isDark={isDark}
-          styles={styles}
-        />
+        <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+          <TransactionSummarySection
+            transaction={transaction}
+            amountHidden={amountHidden}
+            setAmountHidden={setAmountHidden}
+            myRole={myRole}
+            theme={theme}
+            isDark={isDark}
+            onOpenActions={() => setActionsMenuVisible(true)}
+            styles={styles}
+          />
 
-        <TransactionStatusSection
-          transaction={transaction}
-          stepData={stepData}
-          theme={theme}
-          isDark={isDark}
-          onOpenHistory={() => setHistoryVisible(true)}
-          styles={styles}
-        />
+          <TransactionStatusSection
+            transaction={transaction}
+            stepData={stepData}
+            theme={theme}
+            isDark={isDark}
+            onOpenHistory={() => router.push(`/transaction-history/${transactionId}`)}
+            styles={styles}
+          />
 
-        <CounterpartiesSection
-          counterparties={counterparties}
-          theme={theme}
-          isDark={isDark}
-          resendPending={resendCounterpartyEmail.isPending}
-          onNudge={async (counterparty) => {
-            try {
-              const result = await resendCounterpartyEmail.mutateAsync({
-                transactionId: transaction.id,
-                counterpartyId: counterparty.id,
+          <CounterpartiesSection
+            counterparties={counterparties}
+            theme={theme}
+            isDark={isDark}
+            resendPending={resendCounterpartyEmail.isPending}
+            onNudge={async (counterparty) => {
+              try {
+                const result = await resendCounterpartyEmail.mutateAsync({
+                  transactionId: transaction.id,
+                  counterpartyId: counterparty.id,
+                });
+                const message =
+                  result?.message ||
+                  result?.data?.message ||
+                  'Reminder email sent successfully.';
+                showResultModal('Nudge Sent', message);
+              } catch (error) {
+                showResultModal(
+                  'Failed to Send Nudge',
+                  error?.response?.data?.error ||
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    'Unable to send reminder email.',
+                );
+              }
+            }}
+            styles={styles}
+          />
+
+          <DocumentsSection
+            documents={documents}
+            theme={theme}
+            isDark={isDark}
+            styles={styles}
+          />
+
+          <SettlementsSection
+            settlements={settlements}
+            transaction={transaction}
+            counterparties={counterparties}
+            emailToName={emailToName}
+            expandedPreconditions={expandedPreconditions}
+            setExpandedPreconditions={setExpandedPreconditions}
+            theme={theme}
+            isDark={isDark}
+            onOpenStatement={() => router.push(`/transaction-statement/${transactionId}`)}
+            styles={styles}
+          />
+
+          <PaymentSection
+            totalDue={totalDue}
+            transaction={transaction}
+            myRole={myRole}
+            theme={theme}
+            isDark={isDark}
+            styles={styles}
+          />
+
+          <AcknowledgementSection
+            transaction={transaction}
+            counterparties={counterparties}
+            myRole={myRole}
+            theme={theme}
+            isDark={isDark}
+            submitPending={submitTransaction.isPending}
+            onSubmit={async () => {
+              try {
+                const result = await submitTransaction.mutateAsync(transactionId);
+                showResultModal(
+                  'Transaction Submitted',
+                  result?.message ||
+                    result?.data?.message ||
+                    'The transaction was submitted successfully.',
+                );
+              } catch (error) {
+                showResultModal(
+                  'Submit Failed',
+                  error?.response?.data?.error ||
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    'Unable to submit this transaction.',
+                );
+              }
+            }}
+            styles={styles}
+          />
+
+          <View style={{ height: 30 }} />
+        </ScrollView>
+      </BlurTargetView>
+
+      <TransactionOverlayShell
+        visible={actionsMenuVisible || confirmModal.visible || resultModal.visible}
+        position={actionsMenuVisible ? 'topRight' : 'center'}
+        dismissible={!confirmModal.loading}
+        blurTarget={blurTargetRef}
+        onClose={() => {
+          if (actionsMenuVisible) {
+            setActionsMenuVisible(false);
+            return;
+          }
+          if (confirmModal.visible && !confirmModal.loading) {
+            closeConfirmModal();
+            return;
+          }
+          if (resultModal.visible) {
+            const closeHandler = resultModal.onClose;
+            setResultModal({
+              visible: false,
+              title: '',
+              message: '',
+              onClose: null,
+            });
+            if (closeHandler) closeHandler();
+          }
+        }}
+      >
+        {actionsMenuVisible ? (
+          <TransactionActionsMenu
+            theme={theme}
+            isDark={isDark}
+            onSelectAction={(action) => {
+              setActionsMenuVisible(false);
+
+              if (action === 'history') {
+                setHistoryVisible(true);
+                return;
+              }
+
+              if (action === 'cancel') {
+                showConfirmModal(
+                  'Cancel Transaction',
+                  'Are you sure you want to cancel this transaction?',
+                  'cancel',
+                );
+                return;
+              }
+
+              if (action === 'void') {
+                showConfirmModal(
+                  'Void Transaction',
+                  'Are you sure you want to void this transaction?',
+                  'void',
+                );
+                return;
+              }
+
+              if (action === 'complete') {
+                showConfirmModal(
+                  'Mark as Complete',
+                  'Are you sure you want to mark this transaction as complete?',
+                  'complete',
+                );
+                return;
+              }
+
+              if (action === 'copy') {
+                showConfirmModal(
+                  'Create Copy',
+                  'Are you sure you want to create a copy of this transaction?',
+                  'copy',
+                );
+              }
+            }}
+          />
+        ) : null}
+
+        {confirmModal.visible ? (
+          <TransactionConfirmModal
+            title={confirmModal.title}
+            message={confirmModal.message}
+            confirmLabel={confirmModal.confirmLabel}
+            loading={confirmModal.loading}
+            theme={theme}
+            isDark={isDark}
+            onClose={closeConfirmModal}
+            onConfirm={async () => {
+              if (!confirmModal.action || confirmModal.loading) return;
+
+              setConfirmModal((current) => ({ ...current, loading: true }));
+
+              try {
+                if (confirmModal.action === 'cancel') {
+                  await deleteTransaction.mutateAsync(transactionId);
+                  closeConfirmModal();
+                  showResultModal(
+                    'Transaction Cancelled',
+                    'The transaction was deleted successfully.',
+                    () => router.back(),
+                  );
+                  return;
+                }
+
+                if (confirmModal.action === 'void') {
+                  await voidTransaction.mutateAsync(transactionId);
+                  closeConfirmModal();
+                  showResultModal('Transaction Voided', 'The transaction was voided successfully.');
+                  return;
+                }
+
+                if (confirmModal.action === 'complete') {
+                  await completeTransaction.mutateAsync(transactionId);
+                  closeConfirmModal();
+                  showResultModal('Transaction Completed', 'The transaction was marked as complete.');
+                  return;
+                }
+
+                if (confirmModal.action === 'copy') {
+                  const result = await copyTransaction.mutateAsync(transactionId);
+                  const newId = result?.id || result?.transaction_id || result?.data?.id;
+                  closeConfirmModal();
+                  showResultModal(
+                    'Transaction Copied',
+                    newId ? `A copy was created successfully. New transaction ID: ${newId}` : 'A copy was created successfully.',
+                  );
+                }
+              } catch (error) {
+                closeConfirmModal();
+                showResultModal(
+                  'Action Failed',
+                  error?.response?.data?.error ||
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    'Unable to complete this action.',
+                );
+              }
+            }}
+          />
+        ) : null}
+
+        {resultModal.visible ? (
+          <TransactionResultModal
+            title={resultModal.title}
+            message={resultModal.message}
+            theme={theme}
+            isDark={isDark}
+            onClose={() => {
+              const closeHandler = resultModal.onClose;
+              setResultModal({
+                visible: false,
+                title: '',
+                message: '',
+                onClose: null,
               });
-              const message =
-                result?.message ||
-                result?.data?.message ||
-                'Reminder email sent successfully.';
-              Alert.alert('Nudge Sent', message);
-            } catch (error) {
-              Alert.alert(
-                'Failed to Send Nudge',
-                error?.response?.data?.error ||
-                  error?.response?.data?.message ||
-                  error?.message ||
-                  'Unable to send reminder email.',
-              );
-            }
-          }}
-          styles={styles}
-        />
-
-        <DocumentsSection
-          documents={documents}
-          theme={theme}
-          isDark={isDark}
-          styles={styles}
-        />
-
-        <SettlementsSection
-          settlements={settlements}
-          transaction={transaction}
-          emailToName={emailToName}
-          expandedPreconditions={expandedPreconditions}
-          setExpandedPreconditions={setExpandedPreconditions}
-          theme={theme}
-          isDark={isDark}
-          onOpenStatement={() => setStatementVisible(true)}
-          styles={styles}
-        />
-
-        <PaymentSection
-          totalDue={totalDue}
-          transaction={transaction}
-          myRole={myRole}
-          theme={theme}
-          isDark={isDark}
-          styles={styles}
-        />
-
-        <AcknowledgementSection
-          counterparties={counterparties}
-          myRole={myRole}
-          theme={theme}
-          isDark={isDark}
-          styles={styles}
-        />
-
-        <View style={{ height: 30 }} />
-      </ScrollView>
-
-      <SettlementStatementModal
-        visible={statementVisible}
-        onClose={() => setStatementVisible(false)}
-        settlements={settlements}
-        transaction={transaction}
-        statementData={statementQuery.data}
-        loading={statementQuery.isLoading}
-      />
-
-      <TransactionHistoryModal
-        visible={historyVisible}
-        onClose={() => setHistoryVisible(false)}
-        history={historyQuery.data ?? []}
-        loading={historyQuery.isLoading}
-        reference={transaction?.reference}
-      />
+              if (closeHandler) {
+                closeHandler();
+              }
+            }}
+          />
+        ) : null}
+      </TransactionOverlayShell>
     </View>
   );
 }
@@ -183,6 +422,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.white,
+  },
+  blurTarget: {
+    flex: 1,
+  },
+  detailHeader: {
+    paddingTop: 38,
+    height: 108,
+  },
+  detailHeaderContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingBottom: 14,
+  },
+  detailHeaderSide: {
+    width: 44,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  detailHeaderBackButton: {
+    width: 28,
+    height: 28,
+  },
+  detailHeaderTitle: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+    flex: 1,
   },
   body: {
     flex: 1,
@@ -208,7 +478,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginHorizontal: 10,
-    paddingHorizontal: 13,
+    paddingLeft: 13,
+    paddingRight: 0,
     marginBottom: 8,
   },
   idRow: {
@@ -232,6 +503,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: 77,
     height: 25,
+    marginLeft: 'auto',
   },
   actionsBtnText: {
     fontSize: 12,
@@ -322,13 +594,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     backgroundColor: Colors.accent17,
-    width: 163,
+    minWidth: 163,
     height: 35,
     borderRadius: 5,
     alignSelf: 'flex-start',
     marginBottom: 6,
     justifyContent: 'flex-start',
-    paddingLeft: 4,
+    paddingHorizontal: 10,
   },
   awaitingBadgeText: {
     fontSize: 14,
@@ -340,14 +612,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     backgroundColor: Colors.primary10,
-    width: 163,
+    minWidth: 163,
     height: 35,
     borderRadius: 5,
     alignSelf: 'flex-start',
     marginBottom: 6,
     marginTop: 8,
     justifyContent: 'flex-start',
-    paddingLeft: 4,
+    paddingHorizontal: 10,
   },
   actionRequiredBadgeText: {
     fontSize: 14,
@@ -364,17 +636,14 @@ const styles = StyleSheet.create({
   historyLink: {
     alignSelf: 'flex-end',
     marginTop: 10,
-    paddingHorizontal: 4,
-  },
-  inlineLinkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    paddingLeft: 4,
+    paddingRight: 14,
   },
   historyLinkText: {
     color: Colors.primary,
     fontSize: 12,
     fontWeight: '500',
+    textDecorationLine: 'underline',
   },
 
   // Counterparties
@@ -386,10 +655,31 @@ const styles = StyleSheet.create({
   cpBlock: {
     paddingVertical: 8,
   },
-  cpTopRow: {
+  cpContentRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+  },
+  cpLeftColumn: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: 12,
+  },
+  cpRightColumn: {
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    minHeight: 72,
+  },
+  cpNameRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  cpVerificationBadgeWrap: {
+    marginTop: 5,
+  },
+  cpNameTextBlock: {
+    flex: 1,
   },
   cpName: {
     fontSize: 14,
@@ -428,18 +718,11 @@ const styles = StyleSheet.create({
     color: Colors.success,
     fontFamily: 'LexendDeca-Regular',
   },
-  cpBottomRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 6,
-  },
   cpEmail: {
     fontSize: 14,
     fontWeight: '500',
     color: Colors.gray,
-    flex: 1,
-    marginRight: 8,
+    marginTop: 10,
   },
   nudgeBtn: {
     flexDirection: 'row',
@@ -451,6 +734,7 @@ const styles = StyleSheet.create({
     height: 25,
     paddingLeft: 7,
     paddingRight: 9,
+    marginTop: 14,
   },
   nudgeBtnText: {
     fontSize: 13,
@@ -592,6 +876,8 @@ const styles = StyleSheet.create({
   preconditionItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   preconditionNumber: {
     fontSize: 13,
@@ -600,12 +886,18 @@ const styles = StyleSheet.create({
     marginRight: 6,
     lineHeight: 18,
   },
+  preconditionContent: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: 4,
+  },
   preconditionDesc: {
     fontSize: 13,
-    fontWeight: '400',
+    fontWeight: '300',
     color: '#707070',
-    marginBottom: 6,
     lineHeight: 18,
+    flexShrink: 1,
+    marginBottom: 10,
   },
   preconditionPartyRow: {
     flexDirection: 'row',
@@ -615,8 +907,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   preconditionParty: {
-    fontSize: 11,
-    fontWeight: '400',
+    fontSize: 13,
+    fontWeight: '300',
     color: '#707070',
     flex: 1,
     marginRight: 10,
@@ -625,6 +917,9 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 14,
     height: 14,
+    marginTop: 2,
+    marginLeft: 4,
+    flexShrink: 0,
     borderWidth: 1,
     borderColor: '#707070',
     borderRadius: 1,
@@ -633,10 +928,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   preconditionDivider: {
-    height: 0.5,
-    backgroundColor: '#2F6BC6',
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: Colors.primary,
     marginVertical: 8,
-    marginLeft: 20,
+    marginLeft: 2,
+    marginRight: 2,
   },
   settlementDivider: {
     height: 1,
@@ -707,6 +1003,7 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     textAlign: 'right',
     textDecorationLine: 'underline',
+    marginTop: 8,
   },
 
   // Acknowledgement
