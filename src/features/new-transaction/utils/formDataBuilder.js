@@ -90,11 +90,14 @@ export function buildTransactionFormData(values) {
     formData.append(settlementField(i, 'id'), SETTLEMENT_STATIC_DEFAULTS.id);
   });
 
-  // Documents -- file gets attached as a multipart upload if present
+  // Documents -- field names are `name` + `file` on ingest (confirmed via API probe
+  // against the Wizer backend). The Swagger lists `description`/`file_url`, but those
+  // are the *response* shape; the server silently drops documents if you post with
+  // those keys. See create-transaction-payload.pdf for the canonical example.
   (values.documents || []).forEach((doc, i) => {
-    formData.append(documentField(i, 'description'), doc.description || '');
+    formData.append(documentField(i, 'name'), doc.description || '');
     if (doc.file) {
-      formData.append(documentField(i, 'file_url'), {
+      formData.append(documentField(i, 'file'), {
         uri: doc.file.uri,
         name: doc.file.name,
         type: doc.file.mimeType || 'application/octet-stream',

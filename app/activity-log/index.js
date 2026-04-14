@@ -1,5 +1,5 @@
 import ActivityLogScreen from '../../src/features/transactions/screens/ActivityLogScreen';
 
-export default function ActivityLogRoute() {
+export default function ActivityLogScreenRoute() {
   return <ActivityLogScreen />;
 }

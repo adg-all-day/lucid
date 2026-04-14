@@ -45,24 +45,31 @@ export default function TransactionStats({ stats }) {
   const isDark = theme.isDark;
   const { width: screenWidth } = useWindowDimensions();
   const cardWidth = useMemo(() => {
+    const sectionHorizontalMargin = 22;
     const horizontalPadding = 24;
-    const gap = 8;
-    const availableWidth = screenWidth - horizontalPadding - gap * (STAT_CARDS.length - 1);
+    const gap = 12;
+    const availableWidth =
+      screenWidth - sectionHorizontalMargin - horizontalPadding - gap * (STAT_CARDS.length - 1);
     const computedWidth = Math.floor(availableWidth / STAT_CARDS.length);
-    return Math.max(76, Math.min(92, computedWidth));
+    return Math.max(70, Math.min(92, computedWidth));
   }, [screenWidth]);
 
   return (
-    <View style={[styles.statsSection, { backgroundColor: theme.primary5 }]}>
+    <View
+      style={[
+        styles.statsSection,
+        { backgroundColor: isDark ? theme.primary5 : Colors.primary10 },
+      ]}
+    >
       <View style={styles.statsContainer}>
         {STAT_CARDS.map((item, index) => (
           <View
             key={item.id}
             style={[
               styles.statCard,
+              { backgroundColor: isDark ? 'rgba(91, 95, 199, 0.5)' : Colors.primary },
               { width: cardWidth },
               index < STAT_CARDS.length - 1 && styles.statCardGap,
-              isDark && styles.statCardDark,
             ]}
           >
             <View style={styles.statTopRow}>
@@ -82,8 +89,9 @@ const styles = StyleSheet.create({
   statsSection: {
     height: 112,
     justifyContent: 'center',
-    backgroundColor: 'rgba(91, 95, 199, 0.05)',
     marginTop: 10,
+    marginHorizontal: 11,
+    borderRadius: 5,
   },
   statsContainer: {
     paddingHorizontal: 12,
@@ -92,7 +100,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   statCard: {
-    backgroundColor: Colors.primary,
     borderRadius: 10,
     padding: 10,
     height: 81,
@@ -100,18 +107,9 @@ const styles = StyleSheet.create({
     borderColor: Colors.white,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  statCardDark: {
-    borderWidth: 0,
-    borderColor: 'transparent',
   },
   statCardGap: {
-    marginRight: 8,
+    marginRight: 12,
   },
   statTopRow: {
     flexDirection: 'row',
@@ -130,13 +128,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statCount: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     color: Colors.white,
     textAlign: 'center',
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '300',
     color: Colors.white,
     textAlign: 'center',

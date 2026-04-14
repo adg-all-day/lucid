@@ -14,11 +14,8 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Text from '../../../components/StyledText';
-import Header from '../../../components/Header';
 import CalendarDatePickerModal from '../../../components/CalendarDatePickerModal';
 import Colors from '../../../constants/colors';
-import useUserStore from '../../../stores/userStore';
-import TransactionStats from '../components/TransactionStats';
 import TransactionCard from '../components/TransactionCard';
 import TransactionsSortMenu from '../components/TransactionsSortMenu';
 import { FilterSelectedDot, SearchIcon, SortVerticalIcon } from '../../../icons';
@@ -31,9 +28,7 @@ export default function TransactionsHomeScreen() {
   const router = useRouter();
   const theme = useTheme();
   const isDark = theme.isDark;
-  const { width: screenWidth } = useWindowDimensions();
-  const userName = useUserStore((state) => state.name);
-  const userAvatar = useUserStore((state) => state.avatar);
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const activeTab = useUiStore((state) => state.activeTab);
   const searchText = useUiStore((state) => state.searchText);
   const setActiveTab = useUiStore((state) => state.setActiveTab);
@@ -147,7 +142,7 @@ export default function TransactionsHomeScreen() {
   const showTransactionsScrollbar = transactionsContentHeight > transactionsViewportHeight;
   const maxTransactionsScroll = Math.max(transactionsContentHeight - transactionsViewportHeight, 1);
   const transactionsThumbHeight = showTransactionsScrollbar
-    ? Math.max((transactionsViewportHeight / transactionsContentHeight) * transactionsViewportHeight * 0.5, 14)
+    ? Math.max((transactionsViewportHeight / transactionsContentHeight) * transactionsViewportHeight * 0.2, 14)
     : 0;
   const transactionsThumbTravel = Math.max(transactionsViewportHeight - transactionsThumbHeight, 0);
   const transactionsThumbTranslateY = useMemo(
@@ -161,7 +156,6 @@ export default function TransactionsHomeScreen() {
   );
   const disableOuterScroll = isTransactionsListInteracting;
   const showClearTransactionsControls =
-    activeTab !== 'All Transactions' ||
     searchText.trim().length > 0 ||
     dateFilter !== 'all' ||
     sortField !== 'created_at' ||
@@ -180,13 +174,27 @@ export default function TransactionsHomeScreen() {
       transactionsQuery.fetchNextPage();
     }
   };
+  const transactionsViewportMaxHeight = Math.max(330, screenHeight - 235);
+  const filterMenuBackgroundColor = theme.isDark ? '#2B2B2B' : theme.cardBg;
+  const filterMenuBorderColor = theme.isDark ? 'rgba(255,255,255,0.08)' : '#E6E6E6';
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header
-        name={userName || 'there'}
-        avatarUri={userAvatar}
-      />
+      <View style={[styles.detailHeader, { backgroundColor: theme.headerBg }]}>
+        <View style={styles.detailHeaderContent}>
+          <View style={styles.detailHeaderSide}>
+            <TouchableOpacity
+              style={styles.detailHeaderBackButton}
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="arrow-back-circle-outline" size={28} color={Colors.white} />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.detailHeaderTitle}>My Transactions</Text>
+          <View style={styles.detailHeaderSide} />
+        </View>
+      </View>
       <ScrollView
         style={styles.body}
         showsVerticalScrollIndicator={false}
@@ -200,47 +208,83 @@ export default function TransactionsHomeScreen() {
           />
         }
       >
-        <TransactionStats stats={stats} />
-
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: isDark ? theme.text : Colors.primary }]}>My Transactions</Text>
           <View style={[styles.sectionCard, { backgroundColor: theme.primary5 }]}>
             <View style={styles.searchRow}>
-              <View style={[styles.searchBar, { backgroundColor: theme.cardBg }]}>
-                <SearchIcon size={13} color={theme.iconMuted} />
+              <View style={[styles.searchBar, { backgroundColor: Colors.white }]}>
+                <SearchIcon size={13} color="rgba(151, 151, 151, 1)" />
                 <TextInput
                   style={[styles.searchInput, { color: theme.text }]}
                   value={searchText}
                   onChangeText={setSearchText}
                   placeholder="Search"
-                  placeholderTextColor={Colors.grayMedium}
+                  placeholderTextColor="rgba(151, 151, 151, 1)"
                 />
                 {searchText ? (
-                  <TouchableOpacity onPress={() => setSearchText('')}>
+                  <TouchableOpacity style={styles.searchClearButton} onPress={() => setSearchText('')}>
                     <Text style={styles.clearText}>x</Text>
                   </TouchableOpacity>
+                ) : null}
+              </View>
+              <View style={styles.filterButtonWrap}>
+                <TouchableOpacity
+                  style={[
+                    styles.iconButton,
+                    compactActions && styles.iconButtonCompact,
+                    { backgroundColor: Colors.white },
+                  ]}
+                  onPress={() => {
+                    setShowSortMenu(false);
+                    setShowFilterMenu((current) => !current);
+                  }}
+                >
+                  <View style={styles.filterIconWrap}>
+                    <Ionicons name="filter" size={22} color="rgba(151, 151, 151, 1)" />
+                  </View>
+                </TouchableOpacity>
+
+                {showFilterMenu ? (
+                  <Pressable style={styles.filterMenuOverlay} onPress={() => setShowFilterMenu(false)}>
+                    <Pressable
+                      style={[
+                        styles.filterMenu,
+                        { backgroundColor: filterMenuBackgroundColor, borderColor: filterMenuBorderColor },
+                      ]}
+                      onPress={(event) => event.stopPropagation()}
+                    >
+                      {DATE_FILTER_OPTIONS.map((option) => {
+                        const selected = dateFilter === option.value;
+                        return (
+                          <TouchableOpacity
+                            key={option.value}
+                            style={styles.filterOption}
+                            onPress={() => handleSelectDateFilter(option.value)}
+                          >
+                            {selected ? (
+                              <FilterSelectedDot size={20} />
+                            ) : (
+                              <View
+                                style={[
+                                  styles.filterRadioOuter,
+                                  { borderColor: '#D0D0D0' },
+                                ]}
+                              />
+                            )}
+                            <Text style={[styles.filterOptionText, { color: theme.text }]}>
+                              {option.label}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </Pressable>
+                  </Pressable>
                 ) : null}
               </View>
               <TouchableOpacity
                 style={[
                   styles.iconButton,
                   compactActions && styles.iconButtonCompact,
-                  { backgroundColor: theme.cardBg },
-                ]}
-                onPress={() => {
-                  setShowSortMenu(false);
-                  setShowFilterMenu((current) => !current);
-                }}
-              >
-                <View style={styles.filterIconWrap}>
-                  <Ionicons name="filter" size={22} color={theme.iconMuted} />
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.iconButton,
-                  compactActions && styles.iconButtonCompact,
-                  { backgroundColor: theme.cardBg },
+                  { backgroundColor: Colors.white },
                 ]}
                 onPress={() => {
                   setShowFilterMenu(false);
@@ -248,7 +292,7 @@ export default function TransactionsHomeScreen() {
                 }}
               >
                 <View style={styles.sortIconWrap}>
-                  <SortVerticalIcon width={11} height={14} color={theme.iconMuted} />
+                  <SortVerticalIcon width={11} height={14} color="rgba(151, 151, 151, 1)" />
                 </View>
               </TouchableOpacity>
               {showClearTransactionsControls ? (
@@ -263,47 +307,7 @@ export default function TransactionsHomeScreen() {
                   <Text style={[styles.clearButtonText, { color: theme.textSecondary }]}>Clear</Text>
                 </TouchableOpacity>
               ) : null}
-              <TouchableOpacity
-                style={[styles.newBtn, compactActions && styles.newBtnCompact]}
-                onPress={() => router.push('/new-transaction')}
-              >
-                <Text style={styles.newBtnText}>New +</Text>
-              </TouchableOpacity>
             </View>
-
-            {showFilterMenu ? (
-              <Pressable style={styles.filterMenuOverlay} onPress={() => setShowFilterMenu(false)}>
-                <Pressable
-                  style={[styles.filterMenu, { backgroundColor: theme.cardBg }]}
-                  onPress={(event) => event.stopPropagation()}
-                >
-                  {DATE_FILTER_OPTIONS.map((option) => {
-                    const selected = dateFilter === option.value;
-                    return (
-                      <TouchableOpacity
-                        key={option.value}
-                        style={styles.filterOption}
-                        onPress={() => handleSelectDateFilter(option.value)}
-                      >
-                        {selected ? (
-                          <FilterSelectedDot size={20} />
-                        ) : (
-                          <View
-                            style={[
-                              styles.filterRadioOuter,
-                              { borderColor: '#D0D0D0' },
-                            ]}
-                          />
-                        )}
-                        <Text style={[styles.filterOptionText, { color: theme.text }]}>
-                          {option.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </Pressable>
-              </Pressable>
-            ) : null}
 
             <TransactionsSortMenu
               visible={showSortMenu}
@@ -346,6 +350,7 @@ export default function TransactionsHomeScreen() {
                         styles.tabText,
                         { color: theme.textSecondary },
                         activeTab === tab && styles.tabTextActive,
+                        activeTab === tab && { color: theme.isDark ? Colors.white : Colors.primary },
                       ]}
                     >
                       {tab}
@@ -367,7 +372,7 @@ export default function TransactionsHomeScreen() {
             <View style={styles.tabDivider} />
 
             <View
-              style={styles.transactionsListViewport}
+              style={[styles.transactionsListViewport, { maxHeight: transactionsViewportMaxHeight }]}
               onLayout={(event) => setTransactionsViewportHeight(event.nativeEvent.layout.height)}
             >
               {transactionsQuery.isLoading ? (
@@ -434,6 +439,7 @@ export default function TransactionsHomeScreen() {
         </View>
 
         <View style={styles.footerGap} />
+
       </ScrollView>
 
       <CalendarDatePickerModal
@@ -462,9 +468,37 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
   },
+  detailHeader: {
+    paddingTop: 38,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFFFFF',
+  },
+  detailHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+  },
+  detailHeaderSide: {
+    width: 40,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  detailHeaderBackButton: {
+    width: 28,
+    height: 28,
+  },
+  detailHeaderTitle: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 14,
+  },
   section: {
     paddingHorizontal: 11,
-    marginTop: 8,
+    marginTop: 22,
   },
   sectionCard: {
     backgroundColor: 'rgba(91, 95, 199, 0.05)',
@@ -489,9 +523,7 @@ const styles = StyleSheet.create({
     zIndex: 3,
   },
   searchBar: {
-    flex: 1,
-    minWidth: 0,
-    maxWidth: 198,
+    width: 265,
     flexDirection: 'row',
     alignItems: 'center',
     height: 26,
@@ -508,6 +540,12 @@ const styles = StyleSheet.create({
     color: Colors.black,
     paddingVertical: 0,
     fontFamily: 'Satoshi-Regular',
+  },
+  searchClearButton: {
+    marginLeft: 4,
+    paddingHorizontal: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   clearText: {
     fontSize: 12,
@@ -527,6 +565,13 @@ const styles = StyleSheet.create({
   iconButtonCompact: {
     width: 24,
     height: 24,
+  },
+  filterButtonWrap: {
+    position: 'relative',
+    marginLeft: 'auto',
+  },
+  firstRightAlignedButton: {
+    marginLeft: 'auto',
   },
   filterIconWrap: {
     transform: [{ scaleX: 0.8 }],
@@ -555,32 +600,10 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
   },
-  newBtn: {
-    backgroundColor: Colors.primary,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    borderRadius: 5,
-    width: 65,
-    height: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    marginLeft: 'auto',
-  },
-  newBtnCompact: {
-    width: 61,
-  },
-  newBtnText: {
-    color: Colors.white,
-    fontWeight: '500',
-    fontSize: 10,
-  },
   filterMenuOverlay: {
     position: 'absolute',
-    top: 44,
+    top: 30,
     left: 0,
-    right: 0,
-    bottom: 0,
     zIndex: 10,
   },
   filterMenu: {
@@ -591,7 +614,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E6E6E6',
     alignSelf: 'flex-start',
-    marginLeft: 112,
+    marginLeft: -126,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
@@ -654,7 +677,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   tabTextActive: {
-    color: Colors.primary,
+    color: Colors.white,
     fontWeight: '700',
   },
   loading: {

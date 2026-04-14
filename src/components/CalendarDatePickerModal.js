@@ -78,6 +78,8 @@ export default function CalendarDatePickerModal({
   minimumDate,
 }) {
   const theme = useTheme();
+  const sheetBackgroundColor = theme.isDark ? '#2B2B2B' : theme.cardBg;
+  const sheetBorderColor = theme.isDark ? 'rgba(255,255,255,0.08)' : theme.divider;
   const today = useMemo(() => startOfDay(new Date()), []);
   const normalizedMinimumDate = minimumDate ? startOfDay(minimumDate) : null;
   const initialValue = value ? startOfDay(value) : today;
@@ -112,7 +114,7 @@ export default function CalendarDatePickerModal({
         <View
           style={[
             styles.sheet,
-            { backgroundColor: theme.cardBg, borderColor: theme.divider },
+            { backgroundColor: sheetBackgroundColor, borderColor: sheetBorderColor },
           ]}
         >
           <Text style={[styles.label, { color: theme.textSecondary }]}>SELECT DATE</Text>
@@ -154,8 +156,8 @@ export default function CalendarDatePickerModal({
           </View>
 
           <View style={styles.weekRow}>
-            {WEEKDAYS.map((day) => (
-              <Text key={day} style={[styles.weekday, { color: theme.textSecondary }]}>
+            {WEEKDAYS.map((day, index) => (
+              <Text key={`${day}-${index}`} style={[styles.weekday, { color: theme.textSecondary }]}>
                 {day}
               </Text>
             ))}

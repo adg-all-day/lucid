@@ -31,6 +31,9 @@ export default function RootLayout() {
     const onAuthScreen = AUTH_ROUTES.includes(firstSegment);
     const onProtectedScreen =
       firstSegment === '(tabs)' ||
+      firstSegment === 'transactions' ||
+      firstSegment === 'activity-log' ||
+      firstSegment === 'faqs' ||
       firstSegment === 'new-transaction' ||
       firstSegment === 'transaction' ||
       firstSegment === 'transaction-statement' ||
@@ -68,6 +71,9 @@ export default function RootLayout() {
           <Stack.Screen name="log-in" />
           <Stack.Screen name="sign-up" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="transactions/index" />
+          <Stack.Screen name="activity-log/index" />
+          <Stack.Screen name="faqs/index" />
           <Stack.Screen
             name="new-transaction"
             options={{

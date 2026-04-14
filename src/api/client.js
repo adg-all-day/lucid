@@ -3,9 +3,9 @@
 // consistent headers, interceptors, and error handling in one place.
 
 import axios from 'axios';
-import { router } from 'expo-router';
 import { BASE_URL } from '@env';
 import useAuthStore from '../stores/authStore';
+import useUserStore from '../stores/userStore';
 import queryClient from './queryClient';
 
 // Main JSON client — used for most GET/PUT/DELETE requests
@@ -33,8 +33,8 @@ client.interceptors.response.use(
 
     if (status === 401 && !path?.includes('/auth/')) {
       useAuthStore.getState().clearToken();
+      useUserStore.getState().clearUser();
       queryClient.clear();
-      router.replace('/log-in');
     }
 
     throw error;

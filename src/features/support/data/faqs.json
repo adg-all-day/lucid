@@ -1,0 +1,334 @@
+[
+  {
+    "title": "General FAQs",
+    "items": [
+      {
+        "question": "Is Lucid a bank?",
+        "answer": "No. Lucid is an independent escrow service provider. Funds are held in designated accounts in accordance with applicable regulations."
+      },
+      {
+        "question": "Does Lucid guarantee transaction outcomes?",
+        "answer": "No. Lucid holds funds and releases them based on agreed conditions. It does not guarantee performance by either party."
+      },
+      {
+        "question": "Who controls the escrow agreement terms?",
+        "answer": "Both parties agree to the terms before funds are deposited."
+      },
+      {
+        "question": "What happens in a dispute?",
+        "answer": "Funds remain in escrow until a mutual written agreement or a court order / legal instruction."
+      },
+      {
+        "question": "How long can funds remain in escrow?",
+        "answer": "Duration depends on the agreed transaction terms."
+      },
+      {
+        "question": "Are escrow funds commingled?",
+        "answer": "Funds are handled according to regulatory and compliance requirements."
+      },
+      {
+        "question": "Are there transaction limits?",
+        "answer": "Limits depend on regulatory thresholds and verification requirements."
+      },
+      {
+        "question": "What Identity Verification is required?",
+        "answer": "KYC (Know Your Customer)/AML (Anti-Money Laundering) verification may be required before funds are released."
+      },
+      {
+        "question": "What fees does Lucid charge?",
+        "answer": "Fees are disclosed upfront before transaction initiation."
+      },
+      {
+        "question": "Can either party cancel the escrow?",
+        "answer": "Cancellation terms depend on the stage of the transaction and agreed terms."
+      },
+      {
+        "question": "What currencies are supported?",
+        "answer": "Supported currencies are listed on the platform and may expand over time"
+      },
+      {
+        "question": "Is Lucid available globally?",
+        "answer": "Availability depends on jurisdiction and regulatory compliance."
+      },
+      {
+        "question": "What anti-fraud measures does Lucid use?",
+        "answer": "Lucid implements multiple layers of fraud prevention and risk monitoring, including:\nIdentity verification (KYC) for applicable users \nTransaction monitoring and anomaly detection \nScreening against sanctions and watchlists \nDocument verification where required \nSecure authentication protocols\nLucid reserves the right to delay or decline transactions that raise compliance or fraud concerns. Lucid does not guarantee that fraud will never occur, but actively works to mitigate risk through compliance controls and monitoring systems."
+      },
+      {
+        "question": "How are funds protected?",
+        "answer": "Funds held in escrow are:\nSegregated from Lucid's operational accounts \nHeld in designated escrow accounts \nManaged in accordance with applicable regulatory and fiduciary standards \nLucid does not use escrowed funds for lending, investment, or operational expenses. \nFunds remain secured until release conditions are met."
+      },
+      {
+        "question": "What happens if one party becomes unresponsive?",
+        "answer": "If one party becomes unresponsive:\nFunds remain securely in escrow \nThe transaction timeline defined in the escrow agreement applies \nThe responding party may initiate dispute resolution\nDisbursement requires either a mutual written agreement or a legal order/arbitration outcome. Lucid does not automatically release funds due to silence unless explicitly allowed in the escrow terms."
+      }
+    ]
+  },
+  {
+    "title": "Currency / Multi-Currency Escrow FAQs",
+    "items": [
+      {
+        "question": "When is the exchange rate determined?",
+        "answer": "The FX rate and conversion terms are agreed on by both parties at the start of the transaction and recorded in the escrow agreement."
+      },
+      {
+        "question": "Does Lucid provide FX advisory services?",
+        "answer": "No. Lucid does not provide currency advice or speculate on exchange rates. Conversion is executed strictly according to agreed terms."
+      },
+      {
+        "question": "What happens if currency rates fluctuate during escrow?",
+        "answer": "Rate exposure depends on the agreed structure. If the rate is locked upfront, fluctuations do not affect the transaction."
+      },
+      {
+        "question": "Can funds be held without conversion?",
+        "answer": "Yes. Funds may remain in the base currency if conversion is not required under the agreement."
+      },
+      {
+        "question": "Who bears FX risk?",
+        "answer": "FX risk allocation is determined by the parties in their escrow terms."
+      }
+    ]
+  },
+  {
+    "title": "Domain Name Escrow FAQs",
+    "items": [
+      {
+        "question": "How does Lucid verify domain ownership transfer?",
+        "answer": "Ownership is verified through registrar confirmation and WHOIS or equivalent registry records."
+      },
+      {
+        "question": "What if the domain transfer fails?",
+        "answer": "If transfer conditions are not satisfied within the agreed timeline, funds may be returned to the buyer per the agreement."
+      },
+      {
+        "question": "Does Lucid hold domain credentials?",
+        "answer": "No. Lucid does not take control of domains. Transfer occurs directly between buyer and seller."
+      },
+      {
+        "question": "What if there is a dispute about ownership?",
+        "answer": "Funds remain in escrow until parties resolve the issue or provide legal instruction."
+      }
+    ]
+  },
+  {
+    "title": "Electronics Escrow FAQs",
+    "items": [
+      {
+        "question": "How long does the buyer have to inspect the item?",
+        "answer": "Inspection periods are defined in the escrow terms."
+      },
+      {
+        "question": "What happens if the item is defective?",
+        "answer": "Funds remain in escrow pending return, replacement, or dispute resolution."
+      },
+      {
+        "question": "Does Lucid inspect the goods?",
+        "answer": "No. Inspection is the responsibility of the buyer or appointed experts."
+      }
+    ]
+  },
+  {
+    "title": "Jewellery Escrow FAQs",
+    "items": [
+      {
+        "question": "Can authentication be performed by a third party?",
+        "answer": "Yes. Independent authentication can be included in the agreement."
+      },
+      {
+        "question": "What if authenticity is disputed?",
+        "answer": "Funds remain held until resolution or legal instruction."
+      },
+      {
+        "question": "Does Lucid provide valuation services?",
+        "answer": "No. Lucid does not appraise or value jewellery."
+      }
+    ]
+  },
+  {
+    "title": "Merger & Acquisition Escrow FAQs",
+    "items": [
+      {
+        "question": "What is a holdback?",
+        "answer": "This is a portion of the purchase price retained in escrow for a defined period to cover post-closing adjustments or claims."
+      },
+      {
+        "question": "Can Lucid support milestone payments?",
+        "answer": "Yes. Lucid supports milestone-based releases in acquisition transactions based on terms agreed by counterparties."
+      },
+      {
+        "question": "Does Lucid interpret complex legal clauses?",
+        "answer": "Lucid follows the written escrow instructions and does not interpret business disputes."
+      }
+    ]
+  },
+  {
+    "title": "Mortgage Escrow FAQs",
+    "items": [
+      {
+        "question": "Who can access escrow funds during the process?",
+        "answer": "Funds remain secured and inaccessible unless release conditions are met."
+      },
+      {
+        "question": "Can escrow cover taxes or insurance reserves?",
+        "answer": "Yes, if structured in the agreement."
+      },
+      {
+        "question": "Does Lucid provide mortgage underwriting?",
+        "answer": "No. Lucid only holds and disburses funds based on agreed terms."
+      }
+    ]
+  },
+  {
+    "title": "Motor Vehicle Escrow FAQs",
+    "items": [
+      {
+        "question": "How is ownership verified?",
+        "answer": "Verification is done through official registration and title documentation."
+      },
+      {
+        "question": "What if the vehicle fails inspection?",
+        "answer": "Funds remain in escrow pending resolution."
+      },
+      {
+        "question": "Does Lucid arrange vehicle delivery?",
+        "answer": "No. Logistics are handled by the parties."
+      }
+    ]
+  },
+  {
+    "title": "Online / Internet Transactions FAQs",
+    "items": [
+      {
+        "question": "Can this be used for freelance contracts?",
+        "answer": "Yes. Milestone or single-delivery structures are supported on Lucid."
+      },
+      {
+        "question": "What if digital assets are not delivered as agreed?",
+        "answer": "Funds remain held until resolution."
+      },
+      {
+        "question": "Is there protection against chargebacks?",
+        "answer": "Once funds are released through escrow, chargeback risk is reduced compared to direct card payments."
+      }
+    ]
+  },
+  {
+    "title": "Real Estate Escrow FAQs",
+    "items": [
+      {
+        "question": "Does Lucid perform title searches?",
+        "answer": "No. Lucid releases funds based on confirmation that title conditions are met."
+      },
+      {
+        "question": "Can Lucid support staged property payments?",
+        "answer": "Yes, including construction-linked payments if stated in the pre-agreed terms and conditions."
+      },
+      {
+        "question": "What if closing is delayed?",
+        "answer": "Funds remain securely held until the revised closing date or cancellation."
+      }
+    ]
+  },
+  {
+    "title": "Rental / Security Deposit FAQs",
+    "items": [
+      {
+        "question": "Who determines deductions?",
+        "answer": "Deductions are made to align with the lease terms agreed by both parties."
+      },
+      {
+        "question": "Can tenants dispute deductions?",
+        "answer": "Yes. Funds remain in escrow pending resolution"
+      },
+      {
+        "question": "Does Lucid inspect the property",
+        "answer": "No. Inspection is conducted by the landlord and tenant."
+      }
+    ]
+  },
+  {
+    "title": "Settlement / Legal Escrow FAQs",
+    "items": [
+      {
+        "question": "Can Lucid release funds in structured payments?",
+        "answer": "Yes, if defined in the settlement terms."
+      },
+      {
+        "question": "What if court approval is required?",
+        "answer": "Funds are released only after the required legal documentation is provided."
+      },
+      {
+        "question": "Does Lucid provide legal advice?",
+        "answer": "No. Counterparties should consult their legal advisors."
+      }
+    ]
+  },
+  {
+    "title": "Software License Escrow FAQs",
+    "items": [
+      {
+        "question": "Does Lucid store source code?",
+        "answer": "No. This escrow relates to payment release, not source code storage."
+      },
+      {
+        "question": "What if access credentials are incomplete?",
+        "answer": "Funds remain in escrow until agreed verification is completed."
+      },
+      {
+        "question": "Can this support phased software delivery?",
+        "answer": "Yes, through pre-agreed milestone-based release terms."
+      }
+    ]
+  },
+  {
+    "title": "Warranty Escrow FAQs",
+    "items": [
+      {
+        "question": "What happens during the warranty period?",
+        "answer": "Funds remain held until obligations are fulfilled or claims resolved."
+      },
+      {
+        "question": "Can partial claims be deducted?",
+        "answer": "Yes, if structured in the escrow agreement by the counterparties."
+      },
+      {
+        "question": "Does Lucid evaluate performance quality?",
+        "answer": "No. Release depends on contractual triggers or legal instructions."
+      }
+    ]
+  },
+  {
+    "title": "Professional Services Escrow FAQs",
+    "items": [
+      {
+        "question": "Can Lucid be used for consulting and agencies?",
+        "answer": "Yes. Lucid is particularly useful for milestone-based projects."
+      },
+      {
+        "question": "What if milestones are disputed?",
+        "answer": "Funds remain in escrow until resolution."
+      },
+      {
+        "question": "Does Lucid determine whether work meets quality standards?",
+        "answer": "No. Parties define acceptance criteria in advance."
+      }
+    ]
+  },
+  {
+    "title": "Custom / Other Escrow FAQs",
+    "items": [
+      {
+        "question": "Can Lucid structure non-standard agreements?",
+        "answer": "Yes. Custom escrow structures can be created."
+      },
+      {
+        "question": "What industries can use custom escrow?",
+        "answer": "Any industry involving high-value or risk-sensitive transactions."
+      },
+      {
+        "question": "Are there limits to customisation?",
+        "answer": "Structures must comply with applicable regulations and Lucid policies."
+      }
+    ]
+  }
+]

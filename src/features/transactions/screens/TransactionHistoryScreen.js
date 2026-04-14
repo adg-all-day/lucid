@@ -12,14 +12,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import useTheme from '../../../hooks/useTheme';
-import { TimePastIcon } from '../../../icons';
 import useTransactionDetailViewModel from '../hooks/useTransactionDetailViewModel';
 import { formatActionLabel, formatDate } from '../utils/formatters';
 
-const FAQ_ITEMS = [
-  'How long does the escrow process take?',
-  'How does Lucid protect me?',
-];
 const SCROLLBAR_TOP_OFFSET = 6;
 const SCROLLBAR_BOTTOM_OFFSET = 18;
 
@@ -27,7 +22,6 @@ export default function TransactionHistoryScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const theme = useTheme();
-  const isDark = theme.isDark;
   const { historyQuery } = useTransactionDetailViewModel(id);
   const history = historyQuery.data ?? [];
 
@@ -59,7 +53,7 @@ export default function TransactionHistoryScreen() {
   if (historyQuery.isLoading) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={Colors.white} />
       </View>
     );
   }
@@ -68,20 +62,22 @@ export default function TransactionHistoryScreen() {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.header, { backgroundColor: theme.background }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()} activeOpacity={0.75}>
-          <Ionicons name="arrow-back" size={20} color={Colors.primary} />
+          <Ionicons name="arrow-back" size={16} color={Colors.white} />
         </TouchableOpacity>
         <View style={styles.headerTitleWrap}>
-          <TimePastIcon size={18} color={Colors.primary} />
           <Text style={styles.headerTitle}>Transaction History</Text>
         </View>
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.body}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={[styles.historyCard, { backgroundColor: theme.primary10 }]}>
           {history.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Text style={[styles.emptyText, { color: theme.textSecondary }]}>No history yet.</Text>
+              <Text style={[styles.emptyText, { color: Colors.white }]}>No history yet.</Text>
             </View>
           ) : (
             <View
@@ -102,15 +98,15 @@ export default function TransactionHistoryScreen() {
                 {history.map((item, index) => (
                   <View key={item.id || `history-${index}`}>
                     <View style={styles.historyItem}>
-                      <Text style={[styles.historyAction, { color: theme.text }]}>
+                      <Text style={[styles.historyAction, { color: Colors.white }]}>
                         {formatActionLabel(item.action) || item.action}
                       </Text>
-                      <Text style={[styles.historyDate, { color: theme.textSecondary }]}>
+                      <Text style={[styles.historyDate, { color: Colors.white }]}>
                         {formatDate(item.created_at)}
                       </Text>
                     </View>
                     {index < history.length - 1 ? (
-                      <View style={[styles.divider, { backgroundColor: Colors.grayLight }]} />
+                      <View style={[styles.divider, { backgroundColor: 'rgba(255,255,255,0.2)' }]} />
                     ) : null}
                   </View>
                 ))}
@@ -131,29 +127,6 @@ export default function TransactionHistoryScreen() {
               ) : null}
             </View>
           )}
-        </View>
-
-        <View style={styles.faqHeader}>
-          <Ionicons name="help-circle-outline" size={21} color={Colors.primary} />
-          <Text style={styles.faqTitle}>Got Questions?</Text>
-        </View>
-
-        <View style={[styles.faqCard, { backgroundColor: theme.primary10 }]}>
-          {FAQ_ITEMS.map((question, index) => (
-            <View key={question}>
-              <TouchableOpacity style={styles.faqRow} activeOpacity={0.8}>
-                <Text style={[styles.faqText, { color: theme.text }]}>{question}</Text>
-                <Ionicons name="chevron-forward" size={16} color={theme.text} />
-              </TouchableOpacity>
-              {index < FAQ_ITEMS.length - 1 ? (
-                <View style={[styles.divider, { backgroundColor: Colors.grayLight }]} />
-              ) : null}
-            </View>
-          ))}
-
-          <TouchableOpacity activeOpacity={0.8} style={styles.moreFaqLink}>
-            <Text style={styles.moreFaqText}>More Frequently Asked Questions</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -180,35 +153,38 @@ const styles = StyleSheet.create({
   backButton: {
     width: 28,
     height: 28,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitleWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
   },
   headerTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: Colors.primary,
+    color: Colors.white,
   },
   headerSpacer: {
     width: 28,
   },
   body: {
+    flexGrow: 1,
     paddingHorizontal: 12,
     paddingTop: 4,
     paddingBottom: 24,
   },
   historyCard: {
+    flex: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
     paddingVertical: 8,
-    maxHeight: 520,
   },
   historyListViewport: {
-    maxHeight: 480,
+    flex: 1,
     position: 'relative',
   },
   historyListContent: {
@@ -251,44 +227,5 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 13,
-  },
-  faqHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 26,
-    marginBottom: 10,
-  },
-  faqTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  faqCard: {
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingTop: 6,
-    paddingBottom: 10,
-  },
-  faqRow: {
-    minHeight: 42,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  faqText: {
-    fontSize: 12,
-    fontWeight: '400',
-    flex: 1,
-    paddingRight: 12,
-  },
-  moreFaqLink: {
-    paddingTop: 10,
-    paddingBottom: 2,
-  },
-  moreFaqText: {
-    fontSize: 11,
-    fontWeight: '400',
-    color: Colors.primary,
   },
 });

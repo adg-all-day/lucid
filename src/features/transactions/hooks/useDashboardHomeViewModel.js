@@ -1,51 +1,28 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import client from '../../../api/client';
-import { extractCollection } from '../../../api/utils/responseParsers';
+import { extractCollection, extractPayload } from '../../../api/utils/responseParsers';
 import { queryKeys } from '../../../constants/queryKeys';
 import useActivityLogQuery from './useActivityLogQuery';
 
-function readTotalCount(response) {
-  const payload = response?.data ?? {};
-  return payload.total_filtered_records ?? payload.totalFilteredRecords ?? extractCollection(response).length;
+function readDashboardCounts(response) {
+  const payload = extractPayload(response);
+  const counts = payload?.data ?? payload ?? {};
+
+  return {
+    all: counts.total ?? 0,
+    actionRequired: counts.action_required ?? 0,
+    open: counts.open ?? 0,
+    closed: counts.closed ?? 0,
+  };
 }
 
 export default function useDashboardHomeViewModel() {
-  const allCountQuery = useQuery({
-    queryKey: queryKeys.transactions({ scope: 'dashboard-count', list_type: 'all' }),
+  const countsQuery = useQuery({
+    queryKey: queryKeys.transactions({ scope: 'dashboard-counts' }),
     queryFn: async () => {
-      const res = await client.get('/transactions', { params: { limit: 1, offset: 0 } });
-      return readTotalCount(res);
-    },
-  });
-
-  const actionRequiredCountQuery = useQuery({
-    queryKey: queryKeys.transactions({ scope: 'dashboard-count', list_type: 'action_required' }),
-    queryFn: async () => {
-      const res = await client.get('/transactions', {
-        params: { list_type: 'action_required', limit: 1, offset: 0 },
-      });
-      return readTotalCount(res);
-    },
-  });
-
-  const openCountQuery = useQuery({
-    queryKey: queryKeys.transactions({ scope: 'dashboard-count', list_type: 'open' }),
-    queryFn: async () => {
-      const res = await client.get('/transactions', {
-        params: { list_type: 'open', limit: 1, offset: 0 },
-      });
-      return readTotalCount(res);
-    },
-  });
-
-  const closedCountQuery = useQuery({
-    queryKey: queryKeys.transactions({ scope: 'dashboard-count', list_type: 'closed' }),
-    queryFn: async () => {
-      const res = await client.get('/transactions', {
-        params: { list_type: 'closed', limit: 1, offset: 0 },
-      });
-      return readTotalCount(res);
+      const res = await client.get('/transactions/counts');
+      return readDashboardCounts(res);
     },
   });
 
@@ -68,25 +45,12 @@ export default function useDashboardHomeViewModel() {
   const recentActivityQuery = useActivityLogQuery({ limit: 3 });
 
   const stats = useMemo(
-    () => ({
-      all: allCountQuery.data ?? 0,
-      actionRequired: actionRequiredCountQuery.data ?? 0,
-      open: openCountQuery.data ?? 0,
-      closed: closedCountQuery.data ?? 0,
-    }),
-    [
-      allCountQuery.data,
-      actionRequiredCountQuery.data,
-      openCountQuery.data,
-      closedCountQuery.data,
-    ],
+    () => countsQuery.data ?? { all: 0, actionRequired: 0, open: 0, closed: 0 },
+    [countsQuery.data],
   );
 
   const isLoading =
-    allCountQuery.isLoading ||
-    actionRequiredCountQuery.isLoading ||
-    openCountQuery.isLoading ||
-    closedCountQuery.isLoading ||
+    countsQuery.isLoading ||
     recentTransactionsQuery.isLoading ||
     recentActivityQuery.isLoading;
 

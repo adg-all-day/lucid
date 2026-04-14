@@ -4,7 +4,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import LucidLogo from '../icons/LucidLogo';
 import Colors from '../constants/colors';
 import Text from './StyledText';
@@ -15,7 +14,6 @@ import { useLogout } from '../api/queries/auth';
 import useTheme from '../hooks/useTheme';
 
 export default function Header({ name, avatarUri }) {
-  const router = useRouter();
   const logoutMutation = useLogout();
   const theme = useTheme();
   const [showMenu, setShowMenu] = useState(false);
@@ -26,10 +24,10 @@ export default function Header({ name, avatarUri }) {
     } catch {
       // even if the server call fails, clear local state
     }
-    useAuthStore.getState().clearToken();
+    await useAuthStore.getState().clearToken();
     useUserStore.getState().clearUser();
     queryClient.clear();
-    router.replace('/log-in');
+    setShowMenu(false);
   };
 
   return (

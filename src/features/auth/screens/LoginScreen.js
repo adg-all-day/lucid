@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
@@ -20,13 +20,19 @@ export default function LoginScreen() {
   const theme = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLogin();
-  const { control, handleSubmit } = useForm({
+  const lastLoginIdentifier = useAuthStore((state) => state.lastLoginIdentifier);
+  const { control, handleSubmit, setValue } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
     },
   });
+
+  useEffect(() => {
+    if (!lastLoginIdentifier) return;
+    setValue('email', lastLoginIdentifier, { shouldDirty: false, shouldTouch: false });
+  }, [lastLoginIdentifier, setValue]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -38,9 +44,11 @@ export default function LoginScreen() {
 
       if (payload?.requires_2fa) {
         useAuthStore.getState().setSessionId(payload.session_id);
+        useAuthStore.getState().setLastLoginIdentifier(data.email);
         router.push('/two-factor-authentication');
         return;
       }
+      useAuthStore.getState().setLastLoginIdentifier(data.email);
       router.replace('/(tabs)');
     } catch {
       // error is available via loginMutation.error

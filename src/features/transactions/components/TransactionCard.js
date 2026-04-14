@@ -18,10 +18,13 @@ import {
   getDaysLeft,
 } from '../utils/formatters';
 
-export default function TransactionCard({ item, onPress }) {
+export default function TransactionCard({ item, onPress, useLightText = false }) {
   const theme = useTheme();
   const isDark = theme.isDark;
   const daysLeft = getDaysLeft(item.closing_date);
+  const transactionTimestamp = item.last_update || item.created_at;
+  const secondaryTextColor = useLightText ? Colors.white : theme.textSecondary;
+  const typeTextColor = useLightText ? Colors.white : isDark ? theme.text : Colors.primary60;
 
   return (
     <View>
@@ -29,18 +32,26 @@ export default function TransactionCard({ item, onPress }) {
         <View style={styles.transactionRow}>
           {/* Left side: type, description, amount, role, counterparty, closing date */}
           <View style={styles.transactionLeft}>
-            <Text style={[styles.transactionType, { color: isDark ? theme.text : Colors.primary60 }]}>{formatType(item.type)}</Text>
+            <Text
+              style={[
+                styles.transactionType,
+                { color: typeTextColor },
+                useLightText && styles.transactionTypeLight,
+              ]}
+            >
+              {formatType(item.type)}
+            </Text>
             <Text
               numberOfLines={1}
               ellipsizeMode="tail"
-              style={[styles.transactionDesc, { color: theme.textSecondary }]}
+              style={[styles.transactionDesc, { color: secondaryTextColor }]}
             >
               {item.description}
             </Text>
-            <Text style={[styles.transactionAmount, { color: theme.textSecondary }]}>
+            <Text style={[styles.transactionAmount, { color: secondaryTextColor }]}>
               {formatAmount(item.amount, item.currency)}
             </Text>
-            <Text style={[styles.transactionMeta, { color: theme.textSecondary }]}>
+            <Text style={[styles.transactionMeta, { color: secondaryTextColor }]}>
               Closing: {formatClosingDate(item.closing_date)}
               {daysLeft !== null ? ` (${daysLeft} days)` : ''}
             </Text>
@@ -49,11 +60,11 @@ export default function TransactionCard({ item, onPress }) {
           {/* Right side: created date, time, status badge */}
           <View style={styles.transactionRight}>
             <View>
-              <Text style={[styles.dateText, { color: theme.textSecondary }]}>
-                {formatShortDate(item.created_at)}
+              <Text style={[styles.dateText, { color: secondaryTextColor }]}>
+                {formatShortDate(transactionTimestamp)}
               </Text>
-              <Text style={[styles.timeText, { color: theme.textSecondary }]}>
-                {formatTime(item.created_at)}
+              <Text style={[styles.timeText, { color: secondaryTextColor }]}>
+                {formatTime(transactionTimestamp)}
               </Text>
             </View>
             <Text
@@ -95,7 +106,10 @@ const styles = StyleSheet.create({
   transactionType: {
     fontSize: 12,
     color: Colors.primary60,
-    fontWeight: '400',
+    fontWeight: '700',
+  },
+  transactionTypeLight: {
+    fontWeight: '700',
   },
   transactionDesc: {
     fontSize: 12,

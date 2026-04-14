@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -17,6 +18,13 @@ import TransactionCard from '../components/TransactionCard';
 import TransactionStats from '../components/TransactionStats';
 import useDashboardHomeViewModel from '../hooks/useDashboardHomeViewModel';
 import { formatShortDate } from '../utils/formatters';
+import {
+  BankIcon,
+  FeeCalculatorIcon,
+  RaiseDisputeIcon,
+  StarterGuideIcon,
+  UseCasesIcon,
+} from '../../../icons';
 
 const FOOTER_LINKS = [
   'Terms of Use',
@@ -25,31 +33,41 @@ const FOOTER_LINKS = [
   'Contact Us',
 ];
 
+const QUICK_ACTIONS = [
+  { key: 'fee', label: 'Fee\nCalculator', icon: FeeCalculatorIcon },
+  { key: 'payment', label: 'Payment\nMethods', icon: BankIcon },
+  { key: 'use-cases', label: 'Use\nCases', icon: UseCasesIcon },
+  { key: 'dispute', label: 'Raise a\nDispute', icon: RaiseDisputeIcon },
+];
+
 function ActivityPreviewItem({ item, expanded, onToggle, theme }) {
+  const primaryTextColor = theme.isDark ? Colors.white : Colors.gray;
+  const secondaryTextColor = theme.isDark ? Colors.white : Colors.gray;
+
   return (
     <View>
       <TouchableOpacity style={styles.activityRow} onPress={onToggle} activeOpacity={0.8}>
-        <Text style={[styles.activityDate, { color: theme.textSecondary }]}>
+        <Text style={[styles.activityDate, { color: primaryTextColor }]}>
           {formatShortDate(item.created_at)}
         </Text>
-        <Text style={[styles.activityText, { color: theme.textSecondary }]} numberOfLines={1}>
+        <Text style={[styles.activityText, { color: primaryTextColor }]} numberOfLines={1}>
           {item.event}
         </Text>
         <Ionicons
           name={expanded ? 'chevron-down' : 'chevron-forward'}
           size={14}
-          color={theme.textSecondary}
+          color={theme.isDark ? Colors.white : Colors.gray}
         />
       </TouchableOpacity>
       {expanded && item.device ? (
         <View style={styles.activityDetails}>
-          <Text style={[styles.activityDetailText, { color: theme.textSecondary }]}>
+          <Text style={[styles.activityDetailText, { color: secondaryTextColor }]}>
             Device: {item.device}
           </Text>
-          <Text style={[styles.activityDetailText, { color: theme.textSecondary }]}>
+          <Text style={[styles.activityDetailText, { color: secondaryTextColor }]}>
             Browser: {item.browser || '-'}
           </Text>
-          <Text style={[styles.activityDetailText, { color: theme.textSecondary }]}>
+          <Text style={[styles.activityDetailText, { color: secondaryTextColor }]}>
             IP Address: {item.ip || '-'}
           </Text>
         </View>
@@ -61,6 +79,7 @@ function ActivityPreviewItem({ item, expanded, onToggle, theme }) {
 export default function DashboardHomeScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const isDark = theme.isDark;
   const userName = useUserStore((state) => state.name);
   const userAvatar = useUserStore((state) => state.avatar);
   const {
@@ -72,6 +91,13 @@ export default function DashboardHomeScreen() {
     recentActivityQuery,
   } = useDashboardHomeViewModel();
   const [expandedActivityId, setExpandedActivityId] = useState(null);
+  const [activityInteracted, setActivityInteracted] = useState(false);
+  const sectionTitleColor = isDark ? Colors.white : Colors.primary;
+  const bodyTextColor = isDark ? Colors.white : Colors.gray;
+  const primaryCardBackground = isDark ? theme.cardBg : Colors.white;
+  const elevatedPurpleCard = isDark ? 'rgba(91, 95, 199, 0.5)' : Colors.primary;
+  const footerBackground = isDark ? 'rgba(91, 95, 199, 0.5)' : Colors.primary;
+  const cardDividerColor = isDark ? theme.divider : Colors.primary10;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -83,11 +109,11 @@ export default function DashboardHomeScreen() {
       >
         <TransactionStats stats={stats} />
 
-        <View style={styles.section}>
+        <View style={[styles.section, styles.recentTransactionsSection]}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Transactions</Text>
+            <Text style={[styles.sectionTitle, { color: sectionTitleColor }]}>Recent Transactions</Text>
             <TouchableOpacity
-              style={styles.newTransactionButton}
+              style={[styles.newTransactionButton, { backgroundColor: elevatedPurpleCard }]}
               activeOpacity={0.85}
               onPress={() => router.push('/new-transaction')}
             >
@@ -95,7 +121,7 @@ export default function DashboardHomeScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={[styles.primaryCard, { backgroundColor: theme.cardBg }]}>
+          <View style={[styles.primaryCard, { backgroundColor: primaryCardBackground }]}>
             {recentTransactionsQuery.isLoading ? (
               <ActivityIndicator size="large" color={Colors.primary} style={styles.loader} />
             ) : recentTransactions.length > 0 ? (
@@ -103,64 +129,65 @@ export default function DashboardHomeScreen() {
                 <TransactionCard
                   key={item.id}
                   item={item}
+                  useLightText={isDark}
                   onPress={() => router.push(`/transaction/${item.id}`)}
                 />
               ))
             ) : (
-              <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+              <Text style={[styles.emptyText, { color: bodyTextColor }]}>
                 No transactions found
               </Text>
             )}
-
-            <TouchableOpacity
-              style={styles.seeAllButton}
-              activeOpacity={0.8}
-              onPress={() => router.push('/transactions')}
-            >
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Explore Lucid</Text>
           <TouchableOpacity
-            style={[styles.exploreCard, { backgroundColor: theme.primary10 }]}
-            activeOpacity={0.85}
-            onPress={() => router.push('/help')}
+            style={styles.seeAllButton}
+            activeOpacity={0.8}
+            onPress={() => router.push('/transactions')}
           >
-            <View style={styles.exploreIconWrap}>
-              <Ionicons name="folder-open-outline" size={30} color={Colors.accent} />
-            </View>
-            <View style={styles.exploreTextWrap}>
-              <Text style={[styles.exploreTitle, { color: theme.text }]}>Starter Guide</Text>
-              <Text style={[styles.exploreSubtitle, { color: theme.textSecondary }]}>
-                Watch our quick guide for help with basic questions on the powerful features of Lucid.
-              </Text>
-            </View>
+            <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Activity</Text>
+          <View style={styles.quickActionsRow}>
+            {QUICK_ACTIONS.map((action) => {
+              const IconComponent = action.icon;
+
+              return (
+                <TouchableOpacity
+                  key={action.key}
+                  style={[styles.quickActionCard, { backgroundColor: elevatedPurpleCard }]}
+                  activeOpacity={0.85}
+                >
+                  <IconComponent />
+                  <Text style={[styles.quickActionText, { color: Colors.white }]}>
+                    {action.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
+        </View>
 
-          <View style={[styles.primaryCard, styles.activityCard, { backgroundColor: theme.cardBg }]}>
-            <Text style={[styles.noticeText, { color: theme.textSecondary }]}>
-              Notice anything suspicious?{' '}
-              <Text style={styles.noticeLink} onPress={() => router.push('/change-password')}>
-                Change your password
-              </Text>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: sectionTitleColor }]}>Recent Activity</Text>
+          </View>
+          <Text style={[styles.noticeText, { color: bodyTextColor }]}>
+            Notice anything suspicious?{' '}
+            <Text style={styles.noticeLink} onPress={() => router.push('/change-password')}>
+              Change your password
             </Text>
+          </Text>
 
+          <View style={[styles.primaryCard, styles.activityCard, { backgroundColor: primaryCardBackground }]}>
             <View style={styles.activityHeaderRow}>
-              <Text style={[styles.activityHeaderLabel, { color: theme.textSecondary }]}>Date</Text>
-              <Text style={[styles.activityHeaderLabel, styles.activityHeaderRight, { color: theme.textSecondary }]}>
+              <Text style={[styles.activityHeaderLabel, { color: bodyTextColor }]}>Date</Text>
+              <Text style={[styles.activityHeaderLabel, styles.activityHeaderRight, { color: bodyTextColor }]}>
                 Activity
               </Text>
             </View>
-            <View style={[styles.divider, { backgroundColor: theme.divider }]} />
+            <View style={[styles.divider, { backgroundColor: cardDividerColor }]} />
 
             {recentActivityQuery.isLoading ? (
               <ActivityIndicator size="large" color={Colors.primary} style={styles.loader} />
@@ -169,51 +196,58 @@ export default function DashboardHomeScreen() {
                 <View key={item.id || `${item.created_at}-${index}`}>
                   <ActivityPreviewItem
                     item={item}
-                    expanded={expandedActivityId === item.id || (expandedActivityId === null && index === 0)}
-                    onToggle={() =>
-                      setExpandedActivityId((current) => (current === item.id ? null : item.id))
+                    expanded={
+                      expandedActivityId === item.id ||
+                      (!activityInteracted && expandedActivityId === null && index === 0)
                     }
+                    onToggle={() => {
+                      setActivityInteracted(true);
+                      setExpandedActivityId((current) => (current === item.id ? null : item.id));
+                    }}
                     theme={theme}
                   />
                   {index < recentActivity.length - 1 ? (
-                    <View style={[styles.divider, { backgroundColor: theme.divider }]} />
+                    <View style={[styles.divider, { backgroundColor: cardDividerColor }]} />
                   ) : null}
                 </View>
               ))
             ) : (
-              <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+              <Text style={[styles.emptyText, { color: bodyTextColor }]}>
                 No activity found
               </Text>
             )}
-
-            <TouchableOpacity
-              style={styles.seeAllButton}
-              activeOpacity={0.8}
-              onPress={() => router.push('/activity-log')}
-            >
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
           </View>
+          <TouchableOpacity
+            style={styles.seeAllButton}
+            activeOpacity={0.8}
+            onPress={() => router.push('/activity-log')}
+          >
+            <Text style={styles.seeAllText}>See All</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
-          <View style={styles.quickActionsRow}>
-            <TouchableOpacity style={[styles.quickActionCard, { backgroundColor: theme.cardBg }]} activeOpacity={0.85}>
-              <Ionicons name="calculator-outline" size={18} color={Colors.accent} />
-              <Text style={[styles.quickActionText, { color: theme.textSecondary }]}>Fee Calculator</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.quickActionCard, { backgroundColor: theme.cardBg }]} activeOpacity={0.85}>
-              <Ionicons name="alert-circle-outline" size={18} color={Colors.accent} />
-              <Text style={[styles.quickActionText, { color: theme.textSecondary }]}>Raise a Dispute</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.quickActionCard, { backgroundColor: theme.cardBg }]} activeOpacity={0.85}>
-              <Ionicons name="card-outline" size={18} color={Colors.accent} />
-              <Text style={[styles.quickActionText, { color: theme.textSecondary }]}>Payment Methods</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={[styles.exploreCard, { backgroundColor: elevatedPurpleCard }]}
+            activeOpacity={0.85}
+            onPress={() => Linking.openURL('http://wizerconsulting.com:9025/en/login')}
+          >
+            <Text style={[styles.exploreSectionTitle, { color: Colors.white }]}>Explore Lucid</Text>
+            <View style={styles.exploreContentRow}>
+              <View style={styles.exploreIconWrap}>
+                <StarterGuideIcon width={70} height={70} color={Colors.accent} />
+              </View>
+              <View style={styles.exploreTextWrap}>
+                <Text style={[styles.exploreTitle, { color: Colors.white }]}>Starter Guide</Text>
+                <Text style={[styles.exploreSubtitle, { color: Colors.white }]}>
+                  Watch our quick guide for help with basic questions on the powerful features of Lucid.
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { backgroundColor: footerBackground }]}>
           <View style={styles.footerLinksRow}>
             {FOOTER_LINKS.map((item) => (
               <Text key={item} style={styles.footerLink}>
@@ -236,11 +270,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bodyContent: {
-    paddingBottom: 120,
+    paddingBottom: 0,
   },
   section: {
     paddingHorizontal: 11,
-    marginTop: 10,
+    marginTop: 22,
+  },
+  recentTransactionsSection: {
+    marginTop: 30,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -260,7 +297,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   newTransactionButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: 'rgba(91, 95, 199, 0.5)',
     borderRadius: 5,
     paddingHorizontal: 10,
     height: 24,
@@ -275,12 +312,13 @@ const styles = StyleSheet.create({
   seeAllButton: {
     alignSelf: 'flex-end',
     paddingTop: 8,
-    paddingBottom: 2,
+    paddingRight: 4,
   },
   seeAllText: {
     color: Colors.primary,
     fontSize: 12,
     fontWeight: '500',
+    textDecorationLine: 'underline',
   },
   loader: {
     paddingVertical: 24,
@@ -293,18 +331,23 @@ const styles = StyleSheet.create({
   exploreCard: {
     borderRadius: 10,
     paddingHorizontal: 12,
-    paddingVertical: 14,
+    paddingVertical: 18,
+    backgroundColor: 'rgba(91, 95, 199, 0.5)',
+  },
+  exploreSectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 20,
+  },
+  exploreContentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 36,
   },
   exploreIconWrap: {
     width: 48,
     height: 48,
-    borderWidth: 2,
-    borderColor: Colors.accent,
-    borderRadius: 8,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   exploreTextWrap: {
@@ -374,22 +417,28 @@ const styles = StyleSheet.create({
   quickActionCard: {
     flex: 1,
     borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 62,
+    gap: 6,
+    minHeight: 60,
+    backgroundColor: 'rgba(91, 95, 199, 0.5)',
   },
   quickActionText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
-    textAlign: 'center',
-    marginTop: 6,
+    textAlign: 'left',
+    lineHeight: 12,
   },
   footer: {
-    marginTop: 18,
+    marginTop: 40,
+    backgroundColor: 'rgba(91, 95, 199, 0.5)',
+    marginHorizontal: 0,
     paddingHorizontal: 20,
-    paddingBottom: 10,
+    paddingTop: 32,
+    paddingBottom: 32,
   },
   footerLinksRow: {
     flexDirection: 'row',
@@ -398,14 +447,14 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   footerLink: {
-    color: Colors.grayMedium,
+    color: Colors.white,
     fontSize: 10,
     textDecorationLine: 'underline',
   },
   footerCopyright: {
-    color: Colors.grayMedium,
+    color: Colors.white,
     fontSize: 10,
     textAlign: 'center',
-    marginTop: 12,
+    marginTop: 28,
   },
 });

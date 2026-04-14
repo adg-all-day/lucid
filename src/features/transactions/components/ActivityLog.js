@@ -26,6 +26,7 @@ export default function ActivityLog({
   onApplyDateFilter,
   isFiltering = false,
   onInteractionChange,
+  viewportMaxHeight,
 }) {
   const router = useRouter();
   const theme = useTheme();
@@ -191,7 +192,7 @@ export default function ActivityLog({
       <View style={[styles.activityDivider, { backgroundColor: theme.divider }]} />
 
       <View
-        style={styles.activityListViewport}
+        style={[styles.activityListViewport, viewportMaxHeight ? { maxHeight: viewportMaxHeight } : null]}
         onLayout={(event) => setActivityViewportHeight(event.nativeEvent.layout.height)}
       >
         <Animated.ScrollView

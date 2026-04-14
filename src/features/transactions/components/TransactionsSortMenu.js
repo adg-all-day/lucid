@@ -14,10 +14,14 @@ export default function TransactionsSortMenu({
 }) {
   if (!visible) return null;
 
+  const menuBackgroundColor = theme.isDark ? '#2B2B2B' : theme.cardBg;
+  const dividerColor = theme.isDark ? 'rgba(255,255,255,0.12)' : '#E6E6E6';
+  const menuBorderColor = theme.isDark ? 'rgba(255,255,255,0.08)' : '#E6E6E6';
+
   return (
     <Pressable style={styles.overlay} onPress={onClose}>
       <Pressable
-        style={[styles.menu, { backgroundColor: theme.cardBg }]}
+        style={[styles.menu, { backgroundColor: menuBackgroundColor, borderColor: menuBorderColor }]}
         onPress={(event) => event.stopPropagation()}
       >
         <Text style={[styles.title, { color: theme.text }]}>Sort By</Text>
@@ -45,7 +49,7 @@ export default function TransactionsSortMenu({
           );
         })}
 
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
         <Text style={[styles.title, { color: theme.text }]}>Sort Order</Text>
         {[

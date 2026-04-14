@@ -27,7 +27,7 @@ export const SORT_FIELD_OPTIONS = [
   { value: 'description', label: 'Transaction description' },
   { value: 'amount', label: 'Transaction value' },
   { value: 'closing_date', label: 'Closing date' },
-  { value: 'created_at', label: 'Creation date' },
+  { value: 'created_at', label: 'Last updated date' },
   { value: 'status', label: 'Status' },
 ];
 
