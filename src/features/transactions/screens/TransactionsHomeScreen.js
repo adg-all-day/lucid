@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import Text from '../../../components/StyledText';
 import CalendarDatePickerModal from '../../../components/CalendarDatePickerModal';
 import Colors from '../../../constants/colors';
@@ -25,6 +26,7 @@ import useUiStore from '../../../stores/uiStore';
 import useTheme from '../../../hooks/useTheme';
 
 export default function TransactionsHomeScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const theme = useTheme();
   const isDark = theme.isDark;
@@ -191,7 +193,7 @@ export default function TransactionsHomeScreen() {
               <Ionicons name="arrow-back-circle-outline" size={28} color={Colors.white} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.detailHeaderTitle}>My Transactions</Text>
+          <Text style={styles.detailHeaderTitle}>{t('transactions.myTransactions')}</Text>
           <View style={styles.detailHeaderSide} />
         </View>
       </View>
@@ -211,13 +213,19 @@ export default function TransactionsHomeScreen() {
         <View style={styles.section}>
           <View style={[styles.sectionCard, { backgroundColor: theme.primary5 }]}>
             <View style={styles.searchRow}>
-              <View style={[styles.searchBar, { backgroundColor: Colors.white }]}>
+              <View
+                style={[
+                  styles.searchBar,
+                  showClearTransactionsControls && styles.searchBarWithClear,
+                  { backgroundColor: Colors.white },
+                ]}
+              >
                 <SearchIcon size={13} color="rgba(151, 151, 151, 1)" />
                 <TextInput
-                  style={[styles.searchInput, { color: theme.text }]}
+                  style={styles.searchInput}
                   value={searchText}
                   onChangeText={setSearchText}
-                  placeholder="Search"
+                  placeholder={t('common.search')}
                   placeholderTextColor="rgba(151, 151, 151, 1)"
                 />
                 {searchText ? (
@@ -271,7 +279,7 @@ export default function TransactionsHomeScreen() {
                               />
                             )}
                             <Text style={[styles.filterOptionText, { color: theme.text }]}>
-                              {option.label}
+                              {t(option.labelKey)}
                             </Text>
                           </TouchableOpacity>
                         );
@@ -304,7 +312,7 @@ export default function TransactionsHomeScreen() {
                   ]}
                   onPress={handleClearTransactionsControls}
                 >
-                  <Text style={[styles.clearButtonText, { color: theme.textSecondary }]}>Clear</Text>
+                  <Text style={[styles.clearButtonText, { color: theme.textSecondary }]}>{t('common.clear')}</Text>
                 </TouchableOpacity>
               ) : null}
             </View>
@@ -327,20 +335,20 @@ export default function TransactionsHomeScreen() {
               >
                 {TABS.map((tab) => (
                   <TouchableOpacity
-                    key={tab}
+                    key={tab.value}
                     style={styles.tab}
-                    onPress={() => setActiveTab(tab)}
+                    onPress={() => setActiveTab(tab.value)}
                     onLayout={(event) => {
                       const { x, width } = event.nativeEvent.layout;
                       setTabLayouts((current) => {
-                        const previous = current[tab];
+                      const previous = current[tab.value];
                         if (previous && previous.x === x && previous.width === width) {
                           return current;
                         }
 
                         return {
                           ...current,
-                          [tab]: { x, width },
+                          [tab.value]: { x, width },
                         };
                       });
                     }}
@@ -349,11 +357,11 @@ export default function TransactionsHomeScreen() {
                       style={[
                         styles.tabText,
                         { color: theme.textSecondary },
-                        activeTab === tab && styles.tabTextActive,
-                        activeTab === tab && { color: theme.isDark ? Colors.white : Colors.primary },
+                        activeTab === tab.value && styles.tabTextActive,
+                        activeTab === tab.value && { color: theme.isDark ? Colors.white : Colors.primary },
                       ]}
                     >
-                      {tab}
+                      {t(tab.labelKey)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -382,7 +390,7 @@ export default function TransactionsHomeScreen() {
                   style={styles.loading}
                 />
               ) : filteredTransactions.length === 0 ? (
-                <Text style={[styles.emptyText, { color: theme.text }]}>No transactions found</Text>
+                <Text style={[styles.emptyText, { color: theme.text }]}>{t('transactions.empty')}</Text>
               ) : (
                 <Animated.ScrollView
                   nestedScrollEnabled
@@ -521,9 +529,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     position: 'relative',
     zIndex: 3,
+    width: '100%',
   },
   searchBar: {
     width: 265,
+    maxWidth: 265,
+    flexShrink: 1,
     flexDirection: 'row',
     alignItems: 'center',
     height: 26,
@@ -533,11 +544,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     backgroundColor: Colors.white,
   },
+  searchBarWithClear: {
+    minWidth: 0,
+    flex: 1,
+  },
   searchInput: {
     flex: 1,
     marginLeft: 6,
     fontSize: 12,
-    color: Colors.black,
+    color: 'rgba(151, 151, 151, 1)',
     paddingVertical: 0,
     fontFamily: 'Satoshi-Regular',
   },

@@ -15,7 +15,7 @@ export const signUpSchema = z
   })
   .refine((values) => values.password === values.repeatPassword, {
     path: ['repeatPassword'],
-    message: 'Passwords do not match',
+    message: 'Passwords must match',
   });
 
 export const forgotPasswordSchema = z.object({
@@ -29,8 +29,39 @@ export const passwordChangeSchema = z
   })
   .refine((values) => values.password === values.repeatPassword, {
     path: ['repeatPassword'],
-    message: 'Passwords do not match',
+    message: 'Passwords must match',
   });
+
+export const authenticatedPasswordChangeSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    password: z.string().min(8, 'Password must contain 8 characters'),
+    repeatPassword: z.string().min(1, 'Retype your password'),
+  })
+  .refine((values) => values.currentPassword !== values.password, {
+    path: ['password'],
+    message: 'New password cannot be old password',
+  })
+  .refine((values) => values.password === values.repeatPassword, {
+    path: ['repeatPassword'],
+    message: 'Passwords must match',
+  });
+
+export const createAuthenticatedPasswordChangeSchema = (t) =>
+  z
+    .object({
+      currentPassword: z.string().min(1, t('auth.changePassword.currentPasswordRequired')),
+      password: z.string().min(8, t('auth.passwordRules.length')),
+      repeatPassword: z.string().min(1, t('auth.changePassword.repeatPasswordRequired')),
+    })
+    .refine((values) => values.currentPassword !== values.password, {
+      path: ['password'],
+      message: t('auth.changePassword.newPasswordCannotBeOld'),
+    })
+    .refine((values) => values.password === values.repeatPassword, {
+      path: ['repeatPassword'],
+      message: t('auth.changePassword.passwordsMustMatch'),
+    });
 
 export const twoFactorMethodSchema = z.object({
   method: z.enum(['authenticator', 'sms', 'email', 'recovery_code']),

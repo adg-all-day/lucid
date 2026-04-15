@@ -32,7 +32,7 @@ export default function PickerModal({ visible, onClose, onSelect, items, title, 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={[styles.sheet, { backgroundColor: theme.modalBg }]} onPress={(e) => e.stopPropagation()}>
+        <Pressable style={[styles.sheet, { backgroundColor: theme.cardBgSolid }]} onPress={(e) => e.stopPropagation()}>
           <View style={styles.handle} />
           {title && <Text style={[styles.title, { color: theme.text }]}>{title}</Text>}
           {searchable && (

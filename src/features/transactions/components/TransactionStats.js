@@ -3,7 +3,8 @@
 // with an icon next to it.
 
 import React, { useMemo } from 'react';
-import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import { TouchableOpacity, View, StyleSheet, useWindowDimensions } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import useTheme from '../../../hooks/useTheme';
@@ -18,10 +19,10 @@ import LockIcon from '../../../icons/LockIcon';
 // The card definitions -- which icon, label, and stats key each card uses.
 // Kept here rather than in constants since it's tightly coupled to this component.
 const STAT_CARDS = [
-  { id: '1', icon: 'transfer', label: 'All\nTransactions', countKey: 'all' },
-  { id: '2', icon: 'user-time', label: 'Action\nRequired', countKey: 'actionRequired' },
-  { id: '3', icon: 'unlock', label: 'Open\nTransactions', countKey: 'open' },
-  { id: '4', icon: 'lock', label: 'Closed\nTransactions', countKey: 'closed' },
+  { id: '1', icon: 'transfer', labelKey: 'home.stats.allTransactions', countKey: 'all', tab: 'All Transactions' },
+  { id: '2', icon: 'user-time', labelKey: 'home.stats.actionRequired', countKey: 'actionRequired', tab: 'Action Required' },
+  { id: '3', icon: 'unlock', labelKey: 'home.stats.openTransactions', countKey: 'open', tab: 'Open' },
+  { id: '4', icon: 'lock', labelKey: 'home.stats.closedTransactions', countKey: 'closed', tab: 'Closed' },
 ];
 
 // Picks the right icon component based on the string identifier
@@ -40,7 +41,8 @@ const renderIcon = (iconName) => {
   }
 };
 
-export default function TransactionStats({ stats }) {
+export default function TransactionStats({ stats, onSelectTab }) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isDark = theme.isDark;
   const { width: screenWidth } = useWindowDimensions();
@@ -63,7 +65,7 @@ export default function TransactionStats({ stats }) {
     >
       <View style={styles.statsContainer}>
         {STAT_CARDS.map((item, index) => (
-          <View
+          <TouchableOpacity
             key={item.id}
             style={[
               styles.statCard,
@@ -71,13 +73,15 @@ export default function TransactionStats({ stats }) {
               { width: cardWidth },
               index < STAT_CARDS.length - 1 && styles.statCardGap,
             ]}
+            activeOpacity={0.85}
+            onPress={() => onSelectTab?.(item.tab)}
           >
             <View style={styles.statTopRow}>
               <View style={styles.statIconArea}>{renderIcon(item.icon)}</View>
               <Text style={styles.statCount}>{stats[item.countKey] || 0}</Text>
             </View>
-            <Text style={styles.statLabel}>{item.label}</Text>
-          </View>
+            <Text style={styles.statLabel}>{t(item.labelKey)}</Text>
+          </TouchableOpacity>
         ))}
       </View>
     </View>

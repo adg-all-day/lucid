@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -9,15 +10,16 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import Header from '../../../components/Header';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import useTheme from '../../../hooks/useTheme';
 import useUserStore from '../../../stores/userStore';
+import useUiStore from '../../../stores/uiStore';
 import TransactionCard from '../components/TransactionCard';
 import TransactionStats from '../components/TransactionStats';
 import useDashboardHomeViewModel from '../hooks/useDashboardHomeViewModel';
-import { formatShortDate } from '../utils/formatters';
 import {
   BankIcon,
   FeeCalculatorIcon,
@@ -27,20 +29,37 @@ import {
 } from '../../../icons';
 
 const FOOTER_LINKS = [
-  'Terms of Use',
-  'Trust & Safety',
-  'Our Partners',
-  'Contact Us',
+  'home.footer.termsOfUse',
+  'home.footer.trustSafety',
+  'home.footer.ourPartners',
+  'home.footer.contactUs',
 ];
 
 const QUICK_ACTIONS = [
-  { key: 'fee', label: 'Fee\nCalculator', icon: FeeCalculatorIcon },
-  { key: 'payment', label: 'Payment\nMethods', icon: BankIcon },
-  { key: 'use-cases', label: 'Use\nCases', icon: UseCasesIcon },
-  { key: 'dispute', label: 'Raise a\nDispute', icon: RaiseDisputeIcon },
+  { key: 'fee', labelKey: 'home.quickActions.feeCalculator', icon: FeeCalculatorIcon },
+  { key: 'payment', labelKey: 'home.quickActions.paymentMethods', icon: BankIcon },
+  { key: 'use-cases', labelKey: 'home.quickActions.useCases', icon: UseCasesIcon },
+  { key: 'dispute', labelKey: 'home.quickActions.raiseDispute', icon: RaiseDisputeIcon },
 ];
 
-function ActivityPreviewItem({ item, expanded, onToggle, theme }) {
+function formatActivityPreviewDate(dateStr) {
+  if (!dateStr) return '';
+
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  const hour = date.getHours();
+  const minute = String(date.getMinutes()).padStart(2, '0');
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+
+  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} ${hour % 12 || 12}:${minute}${ampm}`;
+}
+
+function ActivityPreviewItem({ item, expanded, onToggle, theme, t }) {
   const primaryTextColor = theme.isDark ? Colors.white : Colors.gray;
   const secondaryTextColor = theme.isDark ? Colors.white : Colors.gray;
 
@@ -48,7 +67,7 @@ function ActivityPreviewItem({ item, expanded, onToggle, theme }) {
     <View>
       <TouchableOpacity style={styles.activityRow} onPress={onToggle} activeOpacity={0.8}>
         <Text style={[styles.activityDate, { color: primaryTextColor }]}>
-          {formatShortDate(item.created_at)}
+          {formatActivityPreviewDate(item.created_at)}
         </Text>
         <Text style={[styles.activityText, { color: primaryTextColor }]} numberOfLines={1}>
           {item.event}
@@ -59,17 +78,20 @@ function ActivityPreviewItem({ item, expanded, onToggle, theme }) {
           color={theme.isDark ? Colors.white : Colors.gray}
         />
       </TouchableOpacity>
-      {expanded && item.device ? (
+      {expanded ? (
         <View style={styles.activityDetails}>
-          <Text style={[styles.activityDetailText, { color: secondaryTextColor }]}>
-            Device: {item.device}
-          </Text>
-          <Text style={[styles.activityDetailText, { color: secondaryTextColor }]}>
-            Browser: {item.browser || '-'}
-          </Text>
-          <Text style={[styles.activityDetailText, { color: secondaryTextColor }]}>
-            IP Address: {item.ip || '-'}
-          </Text>
+          <View style={styles.activityDetailRow}>
+            <Text style={[styles.activityDetailLabel, { color: secondaryTextColor }]}>{t('activity.device')}</Text>
+            <Text style={[styles.activityDetailValue, { color: secondaryTextColor }]}>{item.device || '-'}</Text>
+          </View>
+          <View style={styles.activityDetailRow}>
+            <Text style={[styles.activityDetailLabel, { color: secondaryTextColor }]}>{t('activity.browser')}</Text>
+            <Text style={[styles.activityDetailValue, { color: secondaryTextColor }]}>{item.browser || '-'}</Text>
+          </View>
+          <View style={styles.activityDetailRow}>
+            <Text style={[styles.activityDetailLabel, { color: secondaryTextColor }]}>{t('activity.ipAddress')}</Text>
+            <Text style={[styles.activityDetailValue, { color: secondaryTextColor }]}>{item.ip || '-'}</Text>
+          </View>
         </View>
       ) : null}
     </View>
@@ -77,13 +99,17 @@ function ActivityPreviewItem({ item, expanded, onToggle, theme }) {
 }
 
 export default function DashboardHomeScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const theme = useTheme();
   const isDark = theme.isDark;
   const userName = useUserStore((state) => state.name);
   const userAvatar = useUserStore((state) => state.avatar);
+  const setActiveTab = useUiStore((state) => state.setActiveTab);
   const {
     isLoading,
+    isRefreshing,
+    refetchAll,
     stats,
     recentTransactions,
     recentActivity,
@@ -95,33 +121,48 @@ export default function DashboardHomeScreen() {
   const sectionTitleColor = isDark ? Colors.white : Colors.primary;
   const bodyTextColor = isDark ? Colors.white : Colors.gray;
   const primaryCardBackground = isDark ? theme.cardBg : Colors.white;
+  const recentTransactionsCardBackground = isDark ? theme.cardBg : 'rgba(91, 95, 199, 0.1)';
   const elevatedPurpleCard = isDark ? 'rgba(91, 95, 199, 0.5)' : Colors.primary;
   const footerBackground = isDark ? 'rgba(91, 95, 199, 0.5)' : Colors.primary;
   const cardDividerColor = isDark ? theme.divider : Colors.primary10;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Header name={userName || 'there'} avatarUri={userAvatar} />
+      <Header name={(userName || '').trim().split(/\s+/)[0] || 'there'} avatarUri={userAvatar} />
       <ScrollView
         style={styles.body}
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={refetchAll}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
       >
-        <TransactionStats stats={stats} />
+        <TransactionStats
+          stats={stats}
+          onSelectTab={(tab) => {
+            setActiveTab(tab);
+            router.push('/transactions');
+          }}
+        />
 
         <View style={[styles.section, styles.recentTransactionsSection]}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: sectionTitleColor }]}>Recent Transactions</Text>
+            <Text style={[styles.sectionTitle, { color: sectionTitleColor }]}>{t('home.recentTransactions')}</Text>
             <TouchableOpacity
               style={[styles.newTransactionButton, { backgroundColor: elevatedPurpleCard }]}
               activeOpacity={0.85}
               onPress={() => router.push('/new-transaction')}
             >
-              <Text style={styles.newTransactionButtonText}>+ New Transaction</Text>
+              <Text style={styles.newTransactionButtonText}>{t('home.newTransaction')}</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={[styles.primaryCard, { backgroundColor: primaryCardBackground }]}>
+          <View style={[styles.primaryCard, { backgroundColor: recentTransactionsCardBackground }]}>
             {recentTransactionsQuery.isLoading ? (
               <ActivityIndicator size="large" color={Colors.primary} style={styles.loader} />
             ) : recentTransactions.length > 0 ? (
@@ -135,7 +176,7 @@ export default function DashboardHomeScreen() {
               ))
             ) : (
               <Text style={[styles.emptyText, { color: bodyTextColor }]}>
-                No transactions found
+                {t('home.noTransactions', { defaultValue: 'No transactions found' })}
               </Text>
             )}
           </View>
@@ -144,7 +185,7 @@ export default function DashboardHomeScreen() {
             activeOpacity={0.8}
             onPress={() => router.push('/transactions')}
           >
-            <Text style={styles.seeAllText}>See All</Text>
+            <Text style={styles.seeAllText}>{t('home.seeAll')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -161,7 +202,7 @@ export default function DashboardHomeScreen() {
                 >
                   <IconComponent />
                   <Text style={[styles.quickActionText, { color: Colors.white }]}>
-                    {action.label}
+                    {t(action.labelKey)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -171,20 +212,20 @@ export default function DashboardHomeScreen() {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: sectionTitleColor }]}>Recent Activity</Text>
+            <Text style={[styles.sectionTitle, { color: sectionTitleColor }]}>{t('home.recentActivity')}</Text>
           </View>
           <Text style={[styles.noticeText, { color: bodyTextColor }]}>
-            Notice anything suspicious?{' '}
+            {t('activity.notice')}{' '}
             <Text style={styles.noticeLink} onPress={() => router.push('/change-password')}>
-              Change your password
+              {t('activity.changePassword')}
             </Text>
           </Text>
 
           <View style={[styles.primaryCard, styles.activityCard, { backgroundColor: primaryCardBackground }]}>
             <View style={styles.activityHeaderRow}>
-              <Text style={[styles.activityHeaderLabel, { color: bodyTextColor }]}>Date</Text>
+              <Text style={[styles.activityHeaderLabel, { color: bodyTextColor }]}>{t('activity.date')}</Text>
               <Text style={[styles.activityHeaderLabel, styles.activityHeaderRight, { color: bodyTextColor }]}>
-                Activity
+                {t('activity.activity')}
               </Text>
             </View>
             <View style={[styles.divider, { backgroundColor: cardDividerColor }]} />
@@ -205,6 +246,7 @@ export default function DashboardHomeScreen() {
                       setExpandedActivityId((current) => (current === item.id ? null : item.id));
                     }}
                     theme={theme}
+                    t={t}
                   />
                   {index < recentActivity.length - 1 ? (
                     <View style={[styles.divider, { backgroundColor: cardDividerColor }]} />
@@ -213,7 +255,7 @@ export default function DashboardHomeScreen() {
               ))
             ) : (
               <Text style={[styles.emptyText, { color: bodyTextColor }]}>
-                No activity found
+                {t('activity.empty')}
               </Text>
             )}
           </View>
@@ -222,7 +264,7 @@ export default function DashboardHomeScreen() {
             activeOpacity={0.8}
             onPress={() => router.push('/activity-log')}
           >
-            <Text style={styles.seeAllText}>See All</Text>
+            <Text style={styles.seeAllText}>{t('home.seeAll')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -232,15 +274,15 @@ export default function DashboardHomeScreen() {
             activeOpacity={0.85}
             onPress={() => Linking.openURL('http://wizerconsulting.com:9025/en/login')}
           >
-            <Text style={[styles.exploreSectionTitle, { color: Colors.white }]}>Explore Lucid</Text>
+            <Text style={[styles.exploreSectionTitle, { color: Colors.white }]}>{t('home.exploreLucid')}</Text>
             <View style={styles.exploreContentRow}>
               <View style={styles.exploreIconWrap}>
                 <StarterGuideIcon width={70} height={70} color={Colors.accent} />
               </View>
               <View style={styles.exploreTextWrap}>
-                <Text style={[styles.exploreTitle, { color: Colors.white }]}>Starter Guide</Text>
+                <Text style={[styles.exploreTitle, { color: Colors.white }]}>{t('home.starterGuide')}</Text>
                 <Text style={[styles.exploreSubtitle, { color: Colors.white }]}>
-                  Watch our quick guide for help with basic questions on the powerful features of Lucid.
+                  {t('home.starterGuideDescription')}
                 </Text>
               </View>
             </View>
@@ -249,13 +291,13 @@ export default function DashboardHomeScreen() {
 
         <View style={[styles.footer, { backgroundColor: footerBackground }]}>
           <View style={styles.footerLinksRow}>
-            {FOOTER_LINKS.map((item) => (
-              <Text key={item} style={styles.footerLink}>
-                {item}
+            {FOOTER_LINKS.map((itemKey) => (
+              <Text key={itemKey} style={styles.footerLink}>
+                {t(itemKey)}
               </Text>
             ))}
           </View>
-          <Text style={styles.footerCopyright}>Copyright © 2026 Lucid. All rights reserved</Text>
+          <Text style={styles.footerCopyright}>{t('home.footer.copyright')}</Text>
         </View>
       </ScrollView>
     </View>
@@ -393,19 +435,30 @@ const styles = StyleSheet.create({
   },
   activityDate: {
     width: '42%',
-    fontSize: 11,
+    fontSize: 12,
   },
   activityText: {
     flex: 1,
-    fontSize: 11,
+    fontSize: 12,
     marginRight: 8,
   },
   activityDetails: {
+    paddingLeft: 12,
+    paddingRight: 12,
     paddingBottom: 10,
   },
-  activityDetailText: {
-    fontSize: 11,
-    marginTop: 2,
+  activityDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 6,
+  },
+  activityDetailLabel: {
+    width: 88,
+    fontSize: 12,
+  },
+  activityDetailValue: {
+    flex: 1,
+    fontSize: 12,
   },
   divider: {
     height: 1,

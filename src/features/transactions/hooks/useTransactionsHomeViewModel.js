@@ -89,7 +89,7 @@ function getSortFieldValue(transaction, sortField) {
     case 'created_at':
       return new Date(transaction.created_at || 0).getTime();
     case 'status':
-      return String(transaction.status || '').toLowerCase();
+      return String(transaction.current_stage || transaction.status || '').toLowerCase();
     default:
       return new Date(transaction.last_update || transaction.created_at || 0).getTime();
   }
@@ -196,13 +196,16 @@ export default function useTransactionsHomeViewModel(
   const stats = useMemo(
     () => ({
       all: allTransactions.length,
-      actionRequired: allTransactions.filter(
-        (item) =>
-          item.status === 'AWAITING_SIGNATURES' ||
-          item.status === 'AWAITING_FUNDS',
+      actionRequired: allTransactions.filter((item) => {
+        const stage = item.current_stage || item.status;
+        return stage === 'AWAITING_SIGNATURES' || stage === 'AWAITING_FUNDS';
+      }).length,
+      open: allTransactions.filter((item) =>
+        OPEN_STATUSES.includes(item.current_stage || item.status),
       ).length,
-      open: allTransactions.filter((item) => OPEN_STATUSES.includes(item.status)).length,
-      closed: allTransactions.filter((item) => CLOSED_STATUSES.includes(item.status)).length,
+      closed: allTransactions.filter((item) =>
+        CLOSED_STATUSES.includes(item.current_stage || item.status),
+      ).length,
     }),
     [allTransactions],
   );

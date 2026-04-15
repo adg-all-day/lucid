@@ -4,6 +4,10 @@ const light = {
   isDark: false,
   background: '#FAFAFA',
   cardBg: '#FFFFFF',
+  // Opaque fallback for places where we need an exact solid color that
+  // matches the translucent cardBg as rendered. In light mode this is
+  // the same as cardBg; dark mode needs the pre-composited value.
+  cardBgSolid: '#FFFFFF',
   modalBg: '#FFFFFF',
   inputBg: '#FFFFFF',
   text: '#212121',
@@ -28,6 +32,11 @@ const dark = {
   isDark: true,
   background: '#212121',
   cardBg: '#FFFFFF1A',
+  // #FFFFFF1A (10% white) over #212121 renders as ~#373737. Use this for
+  // backgrounds that must be opaque (e.g., floating field labels that need
+  // to visually cover the border underneath without stacking a second
+  // translucent layer over the already-translucent parent card).
+  cardBgSolid: '#373737',
   modalBg: '#FFFFFF1A',
   inputBg: '#FFFFFF1A',
   text: '#FFFFFF',

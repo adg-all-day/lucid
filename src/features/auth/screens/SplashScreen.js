@@ -7,6 +7,7 @@ import useAuthStore from '../../../stores/authStore';
 import useUserStore from '../../../stores/userStore';
 import client from '../../../api/client';
 import useTheme from '../../../hooks/useTheme';
+import applyRegionalLanguage from '../../../i18n/applyRegionalLanguage';
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -46,6 +47,7 @@ export default function SplashScreen() {
           const profile = await client.get('/profile');
           const data = profile?.data ?? profile;
           useUserStore.getState().setUser(data);
+          await applyRegionalLanguage(data);
           router.replace('/(tabs)');
         } catch {
           useAuthStore.getState().clearToken();

@@ -6,29 +6,29 @@
 
 // The tabs shown at the top of the transaction list
 export const TABS = [
-  'All Transactions',
-  'Action Required',
-  'Open',
-  'Closed',
+  { value: 'All Transactions', labelKey: 'transactions.tabs.all' },
+  { value: 'Action Required', labelKey: 'transactions.tabs.actionRequired' },
+  { value: 'Open', labelKey: 'transactions.tabs.open' },
+  { value: 'Closed', labelKey: 'transactions.tabs.closed' },
 ];
 
 export const DATE_FILTER_OPTIONS = [
-  { value: 'all', label: 'All time' },
-  { value: '24h', label: 'Last 24 hours' },
-  { value: '7d', label: 'Last 7 days' },
-  { value: '30d', label: 'Last 30 days' },
-  { value: '6m', label: 'Last 6 months' },
-  { value: '12m', label: 'Last 12 months' },
-  { value: 'custom', label: 'Custom' },
+  { value: 'all', labelKey: 'transactions.filters.all' },
+  { value: '24h', labelKey: 'transactions.filters.last24Hours' },
+  { value: '7d', labelKey: 'transactions.filters.last7Days' },
+  { value: '30d', labelKey: 'transactions.filters.last30Days' },
+  { value: '6m', labelKey: 'transactions.filters.last6Months' },
+  { value: '12m', labelKey: 'transactions.filters.last12Months' },
+  { value: 'custom', labelKey: 'transactions.filters.custom' },
 ];
 
 export const SORT_FIELD_OPTIONS = [
-  { value: 'type', label: 'Transaction type' },
-  { value: 'description', label: 'Transaction description' },
-  { value: 'amount', label: 'Transaction value' },
-  { value: 'closing_date', label: 'Closing date' },
-  { value: 'created_at', label: 'Last updated date' },
-  { value: 'status', label: 'Status' },
+  { value: 'type', labelKey: 'transactions.sort.transactionType' },
+  { value: 'description', labelKey: 'transactions.sort.transactionDescription' },
+  { value: 'amount', labelKey: 'transactions.sort.transactionValue' },
+  { value: 'closing_date', labelKey: 'transactions.sort.closingDate' },
+  { value: 'created_at', labelKey: 'transactions.sort.lastUpdatedDate' },
+  { value: 'status', labelKey: 'transactions.sort.status' },
 ];
 
 // Handy groupings for the stats cards

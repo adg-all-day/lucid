@@ -3,7 +3,8 @@
 // when the user has drilled into a transaction detail
 
 import { View } from 'react-native';
-import { Tabs, useSegments } from 'expo-router';
+import { Tabs, useRouter, useSegments } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import NavHomeIcon from '../../src/icons/NavHomeIcon';
 import NavHelpIcon from '../../src/icons/NavHelpIcon';
 import NavHeadsetIcon from '../../src/icons/NavHeadsetIcon';
@@ -13,6 +14,8 @@ import Colors from '../../src/constants/colors';
 import useTheme from '../../src/hooks/useTheme';
 
 export default function TabLayout() {
+  const { t } = useTranslation();
+  const router = useRouter();
   const segments = useSegments();
   const theme = useTheme();
   const isDark = theme.isDark;
@@ -62,7 +65,7 @@ export default function TabLayout() {
                     marginTop: 2,
                   }}
                 >
-                  Home
+                  {t('navigation.home')}
                 </Text>
                 <View
                   style={{
@@ -86,6 +89,12 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="help"
+        listeners={{
+          tabPress: (event) => {
+            event.preventDefault();
+            router.push('/faqs');
+          },
+        }}
         options={{
           tabBarIcon: ({ focused }) => (
             <View style={{ alignItems: 'center' }}>
@@ -102,7 +111,7 @@ export default function TabLayout() {
                   marginTop: 2,
                 }}
               >
-                Help
+                {t('navigation.help')}
               </Text>
               <View
                 style={{
@@ -141,7 +150,7 @@ export default function TabLayout() {
                   marginTop: 2,
                 }}
               >
-                Contact Us
+                {t('navigation.contactUs')}
               </Text>
               <View
                 style={{
@@ -180,7 +189,7 @@ export default function TabLayout() {
                   marginTop: 2,
                 }}
               >
-                Settings
+                {t('navigation.settings')}
               </Text>
               <View
                 style={{

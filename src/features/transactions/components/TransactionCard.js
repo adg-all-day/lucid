@@ -70,10 +70,10 @@ export default function TransactionCard({ item, onPress, useLightText = false })
             <Text
               style={[
                 styles.statusBadge,
-                { color: getStatusColor(item.status) },
+                { color: getStatusColor(item.current_stage || item.status) },
               ]}
             >
-              {getStatusLabel(item.status)}
+              {getStatusLabel(item.current_stage || item.status)}
             </Text>
           </View>
         </View>

@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import client from '../../../api/client';
 import { extractCollection, extractPayload } from '../../../api/utils/responseParsers';
 import { queryKeys } from '../../../constants/queryKeys';
 import useActivityLogQuery from './useActivityLogQuery';
+import useUserStore from '../../../stores/userStore';
 
 function readDashboardCounts(response) {
   const payload = extractPayload(response);
@@ -18,6 +19,9 @@ function readDashboardCounts(response) {
 }
 
 export default function useDashboardHomeViewModel() {
+  const queryClient = useQueryClient();
+  const [isRefreshingAll, setIsRefreshingAll] = useState(false);
+
   const countsQuery = useQuery({
     queryKey: queryKeys.transactions({ scope: 'dashboard-counts' }),
     queryFn: async () => {
@@ -54,8 +58,31 @@ export default function useDashboardHomeViewModel() {
     recentTransactionsQuery.isLoading ||
     recentActivityQuery.isLoading;
 
+  const isRefreshing =
+    isRefreshingAll ||
+    countsQuery.isRefetching ||
+    recentTransactionsQuery.isRefetching ||
+    recentActivityQuery.isRefetching;
+
+  const refetchAll = async () => {
+    setIsRefreshingAll(true);
+    try {
+      const profileRes = await client.get('/profile').catch(() => null);
+      const profile = profileRes ? extractPayload(profileRes) : null;
+      if (profile) {
+        queryClient.setQueryData(['profile'], profile);
+        useUserStore.getState().setUser(profile);
+      }
+      await queryClient.refetchQueries({ type: 'active' });
+    } finally {
+      setIsRefreshingAll(false);
+    }
+  };
+
   return {
     isLoading,
+    isRefreshing,
+    refetchAll,
     stats,
     recentTransactions: recentTransactionsQuery.data ?? [],
     recentActivity: recentActivityQuery.data ?? [],

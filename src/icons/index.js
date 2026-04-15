@@ -46,3 +46,7 @@ export { default as BankIcon } from './BankIcon';
 export { default as UseCasesIcon } from './UseCasesIcon';
 export { default as RaiseDisputeIcon } from './RaiseDisputeIcon';
 export { default as ActivityCalendarIcon } from './ActivityCalendarIcon';
+export { default as LanguageGlobeIcon } from './LanguageGlobeIcon';
+export { default as CountryWorldIcon } from './CountryWorldIcon';
+export { default as NumberHashIcon } from './NumberHashIcon';
+export { default as NameUserIcon } from './NameUserIcon';

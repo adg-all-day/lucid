@@ -1,7 +1,7 @@
 // root layout -- wraps everything with providers, loads custom fonts
 // this replaces the old App.js now that we're using expo-router
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useFonts } from 'expo-font';
@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import useAuthStore from '../src/stores/authStore';
 import useTheme from '../src/hooks/useTheme';
 import QueryProvider from '../src/providers/QueryProvider';
+import { initI18n } from '../src/i18n';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -21,6 +22,18 @@ export default function RootLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hydrating = useAuthStore((state) => state.hydrating);
   const theme = useTheme();
+  const [i18nReady, setI18nReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    initI18n().finally(() => {
+      if (mounted) setI18nReady(true);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (hydrating) return;
@@ -33,10 +46,12 @@ export default function RootLayout() {
       firstSegment === '(tabs)' ||
       firstSegment === 'transactions' ||
       firstSegment === 'activity-log' ||
+      firstSegment === 'change-password' ||
       firstSegment === 'faqs' ||
       firstSegment === 'new-transaction' ||
       firstSegment === 'transaction' ||
       firstSegment === 'transaction-statement' ||
+      firstSegment === 'escrow-transfer' ||
       firstSegment === 'payment-details' ||
       firstSegment === 'transaction-history';
 
@@ -57,10 +72,10 @@ export default function RootLayout() {
   });
 
   const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) await SplashScreen.hideAsync();
-  }, [fontsLoaded]);
+    if (fontsLoaded && i18nReady) await SplashScreen.hideAsync();
+  }, [fontsLoaded, i18nReady]);
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded || !i18nReady) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.background }} onLayout={onLayoutRootView}>
@@ -73,6 +88,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="transactions/index" />
           <Stack.Screen name="activity-log/index" />
+          <Stack.Screen name="change-password" />
           <Stack.Screen name="faqs/index" />
           <Stack.Screen
             name="new-transaction"
@@ -84,6 +100,7 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen name="transaction-statement/[id]" />
+          <Stack.Screen name="escrow-transfer/[id]" />
           <Stack.Screen name="payment-details/[id]" />
           <Stack.Screen name="transaction-history/[id]" />
         </Stack>

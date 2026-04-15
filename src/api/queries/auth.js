@@ -130,6 +130,15 @@ export function useChangePassword() {
   });
 }
 
+export function useRecoveryCodes() {
+  return useMutation({
+    mutationFn: async () => {
+      const res = await client.get('/security/recovery-codes');
+      return res?.data ?? res;
+    },
+  });
+}
+
 export function useVerify2FA() {
   return useMutation({
     mutationFn: async ({ session_id, code }) => {

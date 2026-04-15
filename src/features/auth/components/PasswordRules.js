@@ -1,10 +1,12 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import Text from '../../../components/StyledText';
 import useTheme from '../../../hooks/useTheme';
 
 export default function PasswordRules({ checks, style }) {
+  const { t } = useTranslation();
   const theme = useTheme();
 
   return (
@@ -17,7 +19,7 @@ export default function PasswordRules({ checks, style }) {
             color={check.passed ? '#059669' : '#A0A0A0'}
           />
           <Text style={[styles.text, { color: check.passed ? '#059669' : theme.textSecondary }]}>
-            {check.label}
+            {t(`auth.passwordRules.${check.key}`, { defaultValue: check.label })}
           </Text>
         </View>
       ))}

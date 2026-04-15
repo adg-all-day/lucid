@@ -54,6 +54,31 @@ function getCounterpartyName(counterparty) {
   return `${counterparty.first_name || ''} ${counterparty.last_name || ''}`.trim() || counterparty.email || '';
 }
 
+function getSettlementDecisionBadge(status) {
+  const normalized = String(status || 'pending').toLowerCase();
+
+  if (['accepted', 'accept', 'approved', 'approve'].includes(normalized)) {
+    return { label: 'Accepted', color: Colors.success };
+  }
+
+  if (['rejected', 'reject', 'declined', 'decline'].includes(normalized)) {
+    return { label: 'Rejected', color: Colors.danger };
+  }
+
+  return { label: 'Pending', color: Colors.pending };
+}
+
+function getCounterpartySettlementStatus(counterparty) {
+  return (
+    counterparty?.settlement_status ||
+    counterparty?.settlement_decision_status ||
+    counterparty?.settlement_statement_status ||
+    counterparty?.decision_status ||
+    counterparty?.settlement_decision ||
+    'pending'
+  );
+}
+
 function getStatementPermission(statementData, transaction) {
   if (!statementData) return false;
 
@@ -143,6 +168,7 @@ function buildPartyStatementRows(counterparties, settlements, transactionAmount)
       role: counterparty?.role
         ? counterparty.role.charAt(0).toUpperCase() + counterparty.role.slice(1)
         : 'Participant',
+      decisionBadge: getSettlementDecisionBadge(getCounterpartySettlementStatus(counterparty)),
       rows,
       totalCredits: credits,
       totalDebits: debits,
@@ -188,7 +214,7 @@ export default function SettlementStatementScreen() {
   );
 
   const [expandedId, setExpandedId] = useState(null);
-  const activeExpandedId = expandedId ?? partyStatements[0]?.id ?? null;
+  const activeExpandedId = expandedId;
 
   const viewerNeedsSettlementDecision = getStatementPermission(statementQuery.data, transaction);
 
@@ -317,17 +343,26 @@ export default function SettlementStatementScreen() {
                   activeOpacity={0.8}
                   onPress={() => setExpandedId((current) => (current === party.id ? null : party.id))}
                 >
-                  <View>
-                    <Text style={[styles.partyName, { color: theme.text }]}>{party.name}</Text>
+                  <View style={styles.partyHeaderTextWrap}>
+                    <Text style={[styles.partyName, { color: theme.text }]} numberOfLines={1}>
+                      {party.name}
+                    </Text>
                     <Text style={[styles.partyRole, { color: isDark ? TEXT_MUTED_DARK : Colors.gray }]}>
                       {party.role}
                     </Text>
                   </View>
-                  <Ionicons
-                    name={isExpanded ? 'chevron-down' : 'chevron-forward'}
-                    size={18}
-                    color={isDark ? Colors.white : Colors.black}
-                  />
+                  <View style={styles.partyHeaderAction}>
+                    <View style={styles.partyDecisionWrap}>
+                      <Text style={[styles.partyDecisionText, { color: party.decisionBadge.color }]}>
+                        {party.decisionBadge.label}
+                      </Text>
+                    </View>
+                    <Ionicons
+                      name={isExpanded ? 'chevron-down' : 'chevron-forward'}
+                      size={18}
+                      color={isDark ? Colors.white : Colors.black}
+                    />
+                  </View>
                 </TouchableOpacity>
 
                 <View
@@ -671,6 +706,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  partyHeaderTextWrap: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: 10,
+  },
+  partyHeaderAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  partyDecisionWrap: {
+    minWidth: 58,
+    alignItems: 'flex-end',
+    marginRight: 8,
+  },
   partyHeaderDivider: {
     height: 1,
     width: '100%',
@@ -683,6 +733,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '400',
     marginTop: 1,
+  },
+  partyDecisionText: {
+    fontSize: 11,
+    fontWeight: '500',
+    textAlign: 'right',
   },
   tableHeader: {
     flexDirection: 'row',

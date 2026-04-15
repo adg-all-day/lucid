@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import LucidLogo from '../icons/LucidLogo';
 import Colors from '../constants/colors';
 import Text from './StyledText';
@@ -14,6 +15,7 @@ import { useLogout } from '../api/queries/auth';
 import useTheme from '../hooks/useTheme';
 
 export default function Header({ name, avatarUri }) {
+  const { t } = useTranslation();
   const logoutMutation = useLogout();
   const theme = useTheme();
   const [showMenu, setShowMenu] = useState(false);
@@ -50,12 +52,12 @@ export default function Header({ name, avatarUri }) {
             <View style={styles.menuRow}>
               <TouchableOpacity style={styles.menuBtn} onPress={handleLogout} activeOpacity={0.8}>
                 <Ionicons name="log-out-outline" size={14} color={Colors.white} />
-                <Text style={styles.menuText}>Log out</Text>
+                <Text style={styles.menuText}>{t('common.logOut')}</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <Text style={styles.greeting} numberOfLines={1}>
-              Hello, {name}!
+              {t('home.greeting', { name })}
             </Text>
           )}
         </View>

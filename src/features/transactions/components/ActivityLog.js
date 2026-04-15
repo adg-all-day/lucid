@@ -6,6 +6,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Animated, View, TouchableOpacity, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import Text from '../../../components/StyledText';
 import CalendarDatePickerModal from '../../../components/CalendarDatePickerModal';
 import Colors from '../../../constants/colors';
@@ -28,6 +29,7 @@ export default function ActivityLog({
   onInteractionChange,
   viewportMaxHeight,
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const theme = useTheme();
   const [startDate, setStartDate] = useState(null);
@@ -100,15 +102,15 @@ export default function ActivityLog({
         {isExpanded && item.device && (
           <View style={styles.activityDetails}>
             <View style={styles.activityDetailRow}>
-              <Text style={[styles.activityDetailLabel, { color: theme.textSecondary }]}>Device:</Text>
+              <Text style={[styles.activityDetailLabel, { color: theme.textSecondary }]}>{t('activity.device')}</Text>
               <Text style={[styles.activityDetailValue, { color: theme.textSecondary }]}>{item.device}</Text>
             </View>
             <View style={styles.activityDetailRow}>
-              <Text style={[styles.activityDetailLabel, { color: theme.textSecondary }]}>Browser:</Text>
+              <Text style={[styles.activityDetailLabel, { color: theme.textSecondary }]}>{t('activity.browser')}</Text>
               <Text style={[styles.activityDetailValue, { color: theme.textSecondary }]}>{item.browser}</Text>
             </View>
             <View style={styles.activityDetailRow}>
-              <Text style={[styles.activityDetailLabel, { color: theme.textSecondary }]}>IP Address:</Text>
+              <Text style={[styles.activityDetailLabel, { color: theme.textSecondary }]}>{t('activity.ipAddress')}</Text>
               <Text style={[styles.activityDetailValue, { color: theme.textSecondary }]}>{item.ip}</Text>
             </View>
           </View>
@@ -121,7 +123,7 @@ export default function ActivityLog({
 
   return (
     <View style={[styles.sectionCard, { backgroundColor: theme.cardBg }]}>
-      <Text style={[styles.activityTitle, { color: theme.text }]}>Activity Log</Text>
+      <Text style={[styles.activityTitle, { color: theme.text }]}>{t('activity.title')}</Text>
 
       <View style={styles.filterRow}>
         <Pressable
@@ -134,7 +136,7 @@ export default function ActivityLog({
               { color: theme.textSecondary, backgroundColor: theme.cardBg },
             ]}
           >
-            Start Date
+            {t('activity.startDate')}
           </Text>
           <View style={[styles.dateField, { borderColor: theme.divider, backgroundColor: theme.cardBg }]}>
             <Text style={[styles.dateFieldValue, { color: startDate ? theme.text : Colors.grayMedium }]}>
@@ -154,7 +156,7 @@ export default function ActivityLog({
               { color: theme.textSecondary, backgroundColor: theme.cardBg },
             ]}
           >
-            End Date
+            {t('activity.endDate')}
           </Text>
           <View style={[styles.dateField, { borderColor: theme.divider, backgroundColor: theme.cardBg }]}>
             <Text style={[styles.dateFieldValue, { color: endDate ? theme.text : Colors.grayMedium }]}>
@@ -172,22 +174,22 @@ export default function ActivityLog({
           {isFiltering ? (
             <ActivityIndicator size="small" color={Colors.white} />
           ) : (
-            <Text style={styles.filterButtonText}>Filter</Text>
+            <Text style={styles.filterButtonText}>{t('common.filter')}</Text>
           )}
         </TouchableOpacity>
       </View>
 
       <Text style={[styles.suspiciousText, { color: theme.text }]}>
-        Notice anything suspicious?{' '}
+        {t('activity.notice')}{' '}
         <Text style={styles.linkText} onPress={() => router.push('/change-password')}>
-          Change your password
+          {t('activity.changePassword')}
         </Text>
       </Text>
 
       {/* Column headers */}
       <View style={styles.activityTableHeader}>
-        <Text style={[styles.activityHeaderDate, { color: theme.textSecondary }]}>Date</Text>
-        <Text style={[styles.activityHeaderActivity, { color: theme.textSecondary }]}>Activity</Text>
+        <Text style={[styles.activityHeaderDate, { color: theme.textSecondary }]}>{t('activity.date')}</Text>
+        <Text style={[styles.activityHeaderActivity, { color: theme.textSecondary }]}>{t('activity.activity')}</Text>
       </View>
       <View style={[styles.activityDivider, { backgroundColor: theme.divider }]} />
 
@@ -381,17 +383,19 @@ const styles = StyleSheet.create({
   },
   activityDetails: {
     paddingLeft: 28,
+    paddingRight: 12,
     paddingBottom: 14,
   },
   activityDetailRow: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     marginBottom: 7,
   },
   activityDetailLabel: {
     fontSize: 12,
     fontWeight: '500',
     color: Colors.gray,
-    width: 70,
+    width: 88,
   },
   activityDetailValue: {
     fontSize: 12,

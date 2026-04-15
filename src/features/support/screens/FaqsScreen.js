@@ -13,12 +13,13 @@ export default function FaqsScreen() {
   const isDark = theme.isDark;
   const [expandedKeys, setExpandedKeys] = useState(() => new Set());
 
-  const pageText = isDark ? Colors.white : Colors.black;
-  const sectionTitle = isDark ? Colors.white : Colors.black;
+  const pageText = isDark ? Colors.white : Colors.gray;
+  const sectionTitle = isDark ? Colors.white : Colors.primary;
   const qaText = isDark ? Colors.white : Colors.black;
-  const cardBg = isDark ? theme.cardBg : Colors.white;
-  const divider = Colors.white;
-  const chevronColor = Colors.white;
+  const cardBg = isDark ? theme.cardBg : 'rgba(91, 95, 199, 0.08)';
+  const divider = isDark ? Colors.white : 'rgba(0,0,0,0.08)';
+  const chevronColor = isDark ? Colors.white : Colors.grayMedium;
+  const cardBorder = isDark ? 'transparent' : 'rgba(91, 95, 199, 0.18)';
 
   const isExpanded = useCallback(
     (key) => expandedKeys.has(key),
@@ -63,7 +64,7 @@ export default function FaqsScreen() {
               {section.title}
             </Text>
 
-            <View style={[styles.card, { backgroundColor: cardBg }]}>
+            <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }]}>
               {section.items.map((item, index) => {
                 const key = `${sectionIndex}:${index}`;
                 const expanded = isExpanded(key);
@@ -158,6 +159,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 16,
     paddingBottom: 16,
+    borderWidth: 1,
   },
   questionRow: {
     flexDirection: 'row',

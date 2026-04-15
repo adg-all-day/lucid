@@ -14,6 +14,7 @@ import { useLogin } from '../../../api/queries/auth';
 import useAuthStore from '../../../stores/authStore';
 import getApiErrorMessage from '../utils/getApiErrorMessage';
 import useTheme from '../../../hooks/useTheme';
+import applyRegionalLanguage from '../../../i18n/applyRegionalLanguage';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -49,6 +50,7 @@ export default function LoginScreen() {
         return;
       }
       useAuthStore.getState().setLastLoginIdentifier(data.email);
+      await applyRegionalLanguage(payload?.user || { email: data.email });
       router.replace('/(tabs)');
     } catch {
       // error is available via loginMutation.error

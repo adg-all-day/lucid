@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Text from '../../../components/StyledText';
 import { SORT_FIELD_OPTIONS } from '../utils/constants';
 
@@ -12,6 +13,7 @@ export default function TransactionsSortMenu({
   onSelectSortField,
   onSelectSortDirection,
 }) {
+  const { t } = useTranslation();
   if (!visible) return null;
 
   const menuBackgroundColor = theme.isDark ? '#2B2B2B' : theme.cardBg;
@@ -24,7 +26,7 @@ export default function TransactionsSortMenu({
         style={[styles.menu, { backgroundColor: menuBackgroundColor, borderColor: menuBorderColor }]}
         onPress={(event) => event.stopPropagation()}
       >
-        <Text style={[styles.title, { color: theme.text }]}>Sort By</Text>
+        <Text style={[styles.title, { color: theme.text }]}>{t('transactions.sort.title')}</Text>
         {SORT_FIELD_OPTIONS.map((option) => {
           const selected = sortField === option.value;
           return (
@@ -43,7 +45,7 @@ export default function TransactionsSortMenu({
                   selected && styles.optionTextSelected,
                 ]}
               >
-                {option.label}
+                {t(option.labelKey)}
               </Text>
             </TouchableOpacity>
           );
@@ -51,10 +53,10 @@ export default function TransactionsSortMenu({
 
         <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
-        <Text style={[styles.title, { color: theme.text }]}>Sort Order</Text>
+        <Text style={[styles.title, { color: theme.text }]}>{t('transactions.sort.order')}</Text>
         {[
-          { value: 'asc', label: 'Ascending' },
-          { value: 'desc', label: 'Descending' },
+          { value: 'asc', labelKey: 'transactions.sort.ascending' },
+          { value: 'desc', labelKey: 'transactions.sort.descending' },
         ].map((option) => {
           const selected = sortDirection === option.value;
           return (
@@ -73,7 +75,7 @@ export default function TransactionsSortMenu({
                   selected && styles.optionTextSelected,
                 ]}
               >
-                {option.label}
+                {t(option.labelKey)}
               </Text>
             </TouchableOpacity>
           );

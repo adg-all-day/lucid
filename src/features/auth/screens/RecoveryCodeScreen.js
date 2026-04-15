@@ -12,6 +12,7 @@ import { recoveryCodeSchema } from '../schemas/auth.schema';
 import { useVerify2FA } from '../../../api/queries/auth';
 import useAuthStore from '../../../stores/authStore';
 import useTheme from '../../../hooks/useTheme';
+import applyRegionalLanguage from '../../../i18n/applyRegionalLanguage';
 
 export default function RecoveryCodeScreen() {
   const router = useRouter();
@@ -27,7 +28,9 @@ export default function RecoveryCodeScreen() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await recoveryMutation.mutateAsync({ session_id: sessionId, code: data.code });
+      const result = await recoveryMutation.mutateAsync({ session_id: sessionId, code: data.code });
+      const payload = result?.data ?? result;
+      await applyRegionalLanguage(payload?.user);
       router.replace('/(tabs)');
     } catch {
       // error available via recoveryMutation.error

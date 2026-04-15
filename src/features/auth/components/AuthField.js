@@ -46,47 +46,50 @@ export default function AuthField({
       <Controller
         control={control}
         name={name}
-        render={({ field: { onChange, onBlur, value } }) => {
+        render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => {
           const colors = getFieldColors(theme, isFocused, Boolean(value?.length));
 
           return (
-          <View
-            style={[
-              styles.inputWrap,
-              {
-                borderColor: colors.borderColor,
-                backgroundColor: colors.backgroundColor,
-              },
-              isFocused && styles.inputWrapActive,
-              isFocused && !theme.isDark && styles.inputWrapActiveShadow,
-            ]}
-          >
-            <TextInput
-              style={[styles.input, { color: colors.textColor }]}
-              value={value}
-              onChangeText={onChange}
-              onBlur={() => {
-                setIsFocused(false);
-                onBlur();
-              }}
-              onFocus={() => setIsFocused(true)}
-              placeholder={placeholder}
-              placeholderTextColor={colors.placeholderColor}
-              secureTextEntry={secureTextEntry}
-              keyboardType={keyboardType}
-              autoCapitalize={autoCapitalize}
-              autoCorrect={false}
-              autoFocus={autoFocus}
-            />
-            {icon ? (
-              <View style={styles.iconWrap}>
-                <Ionicons name={icon} size={18} color={colors.iconColor} />
+            <>
+              <View
+                style={[
+                  styles.inputWrap,
+                  {
+                    borderColor: error ? Colors.error : colors.borderColor,
+                    backgroundColor: colors.backgroundColor,
+                  },
+                  isFocused && styles.inputWrapActive,
+                  isFocused && !theme.isDark && styles.inputWrapActiveShadow,
+                ]}
+              >
+                <TextInput
+                  style={[styles.input, { color: colors.textColor }]}
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={() => {
+                    setIsFocused(false);
+                    onBlur();
+                  }}
+                  onFocus={() => setIsFocused(true)}
+                  placeholder={placeholder}
+                  placeholderTextColor={colors.placeholderColor}
+                  secureTextEntry={secureTextEntry}
+                  keyboardType={keyboardType}
+                  autoCapitalize={autoCapitalize}
+                  autoCorrect={false}
+                  autoFocus={autoFocus}
+                />
+                {icon ? (
+                  <View style={styles.iconWrap}>
+                    <Ionicons name={icon} size={18} color={colors.iconColor} />
+                  </View>
+                ) : null}
+                {trailing ? (
+                  <TouchableOpacity style={[styles.iconWrap, trailingContainerStyle]}>{trailing}</TouchableOpacity>
+                ) : null}
               </View>
-            ) : null}
-            {trailing ? (
-              <TouchableOpacity style={[styles.iconWrap, trailingContainerStyle]}>{trailing}</TouchableOpacity>
-            ) : null}
-          </View>
+              {error?.message ? <Text style={styles.errorText}>{error.message}</Text> : null}
+            </>
           );
         }}
       />
@@ -128,5 +131,11 @@ const styles = StyleSheet.create({
     width: 34,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  errorText: {
+    color: Colors.error,
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 5,
   },
 });

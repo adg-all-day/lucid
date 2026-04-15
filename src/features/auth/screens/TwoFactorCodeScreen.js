@@ -13,6 +13,7 @@ import { twoFactorCodeSchema } from '../schemas/auth.schema';
 import { useVerify2FA } from '../../../api/queries/auth';
 import useAuthStore from '../../../stores/authStore';
 import useTheme from '../../../hooks/useTheme';
+import applyRegionalLanguage from '../../../i18n/applyRegionalLanguage';
 
 export default function TwoFactorCodeScreen() {
   const router = useRouter();
@@ -28,7 +29,9 @@ export default function TwoFactorCodeScreen() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await verify2FAMutation.mutateAsync({ session_id: sessionId, code: data.code });
+      const result = await verify2FAMutation.mutateAsync({ session_id: sessionId, code: data.code });
+      const payload = result?.data ?? result;
+      await applyRegionalLanguage(payload?.user);
       router.replace('/(tabs)');
     } catch {
       // error available via verify2FAMutation.error

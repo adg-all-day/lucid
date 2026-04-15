@@ -13,7 +13,28 @@ const client = axios.create({
   baseURL: BASE_URL,
 });
 
+// Multipart client for file uploads. Same auth/response handling as `client`
+// but axios will set Content-Type (including the boundary) automatically
+// based on the FormData payload.
+export const multipartClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'multipart/form-data',
+  },
+  transformRequest: (data) => data,
+});
+
 client.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().token;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    delete config.headers.Authorization;
+  }
+  return config;
+});
+
+multipartClient.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -25,20 +46,29 @@ client.interceptors.request.use((config) => {
 
 // Unwrap the axios response envelope so callers get the actual payload
 // instead of having to do `.data` everywhere. Keeps hook code cleaner.
-client.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    const status = error.response?.status;
-    const path = error.config?.url;
+function unwrapAndHandleSession(response) {
+  return response.data;
+}
 
-    if (status === 401 && !path?.includes('/auth/')) {
-      useAuthStore.getState().clearToken();
-      useUserStore.getState().clearUser();
-      queryClient.clear();
-    }
+function handleSessionError(error) {
+  const status = error.response?.status;
+  const path = error.config?.url;
 
-    throw error;
-  },
-);
+  const shouldClearSession =
+    status === 401 &&
+    !path?.includes('/auth/') &&
+    !path?.includes('/security/password');
+
+  if (shouldClearSession) {
+    useAuthStore.getState().clearToken();
+    useUserStore.getState().clearUser();
+    queryClient.clear();
+  }
+
+  throw error;
+}
+
+client.interceptors.response.use(unwrapAndHandleSession, handleSessionError);
+multipartClient.interceptors.response.use(unwrapAndHandleSession, handleSessionError);
 
 export default client;

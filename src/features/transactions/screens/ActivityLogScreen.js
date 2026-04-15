@@ -13,12 +13,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import CalendarDatePickerModal from '../../../components/CalendarDatePickerModal';
 import Text from '../../../components/StyledText';
 import Colors from '../../../constants/colors';
 import useTheme from '../../../hooks/useTheme';
 import { useInfiniteActivityLogQuery } from '../hooks/useActivityLogQuery';
-import { formatShortDate } from '../utils/formatters';
 import { ActivityCalendarIcon } from '../../../icons';
 
 function formatFilterDate(date) {
@@ -27,7 +27,24 @@ function formatFilterDate(date) {
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   const year = d.getFullYear();
-  return `${month}/${day}/${year}`;
+  return `${day}/${month}/${year}`;
+}
+
+function formatActivityPreviewDate(dateStr) {
+  if (!dateStr) return '';
+
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  const hour = date.getHours();
+  const minute = String(date.getMinutes()).padStart(2, '0');
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+
+  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} ${hour % 12 || 12}:${minute}${ampm}`;
 }
 
 function isSameDay(left, right) {
@@ -40,6 +57,7 @@ function isSameDay(left, right) {
 }
 
 export default function ActivityLogScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const theme = useTheme();
   const isDark = theme.isDark;
@@ -125,8 +143,7 @@ export default function ActivityLogScreen() {
 
   const activityLog = activityQuery.data?.pages.flatMap((page) => page.items) ?? [];
     console.log('Activity log items:', activityLog);
-  const cardBackgroundColor = 'rgba(91, 95, 199, 0.1)';
-  const sectionTextColor = isDark ? Colors.white : Colors.primary;
+  const cardBackgroundColor = isDark ? 'rgba(53, 53, 53, 1)' : 'rgba(91, 95, 199, 0.1)';
   const bodyTextColor = isDark ? Colors.white : Colors.gray;
   const dividerColor = isDark ? 'rgba(255,255,255,0.2)' : Colors.primary10;
   const chevronColor = isDark ? Colors.white : Colors.gray;
@@ -145,7 +162,7 @@ export default function ActivityLogScreen() {
               <Ionicons name="arrow-back-circle-outline" size={28} color={Colors.white} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.headerTitle}>Activity Log</Text>
+          <Text style={styles.headerTitle}>{t('activity.title')}</Text>
           <View style={styles.headerSide} />
         </View>
       </View>
@@ -164,8 +181,24 @@ export default function ActivityLogScreen() {
       >
         <View style={[styles.card, { backgroundColor: cardBackgroundColor }]}>
           <View style={styles.filterRow}>
-            <Pressable style={styles.dateFieldWrap} onPress={() => setPickerTarget('start')}>
-              <Text style={[styles.dateFieldLabel, { color: sectionTextColor }]}>Start Date</Text>
+            <Pressable
+              style={[
+                styles.dateFieldWrap,
+                { backgroundColor: isDark ? 'rgba(53, 53, 53, 1)' : Colors.white },
+              ]}
+              onPress={() => setPickerTarget('start')}
+            >
+              <Text
+                style={[
+                  styles.dateFieldLabel,
+                  {
+                    color: isDark ? Colors.grayLight : Colors.grayMedium,
+                    backgroundColor: isDark ? 'rgba(53, 53, 53, 1)' : Colors.white,
+                  },
+                ]}
+              >
+                {t('activity.startDate', { defaultValue: 'Start Date' })}
+              </Text>
               <TextInput
                 editable={false}
                 value={formatFilterDate(startDate)}
@@ -177,8 +210,24 @@ export default function ActivityLogScreen() {
               </View>
             </Pressable>
 
-            <Pressable style={styles.dateFieldWrap} onPress={() => setPickerTarget('end')}>
-              <Text style={[styles.dateFieldLabel, { color: sectionTextColor }]}>End Date</Text>
+            <Pressable
+              style={[
+                styles.dateFieldWrap,
+                { backgroundColor: isDark ? 'rgba(53, 53, 53, 1)' : Colors.white },
+              ]}
+              onPress={() => setPickerTarget('end')}
+            >
+              <Text
+                style={[
+                  styles.dateFieldLabel,
+                  {
+                    color: isDark ? Colors.grayLight : Colors.grayMedium,
+                    backgroundColor: isDark ? 'rgba(53, 53, 53, 1)' : Colors.white,
+                  },
+                ]}
+              >
+                {t('activity.endDate', { defaultValue: 'End Date' })}
+              </Text>
               <TextInput
                 editable={false}
                 value={formatFilterDate(endDate)}
@@ -199,7 +248,7 @@ export default function ActivityLogScreen() {
               {activityQuery.isRefetching ? (
                 <ActivityIndicator size="small" color={Colors.white} />
               ) : (
-                <Text style={styles.filterButtonText}>Filter</Text>
+                <Text style={styles.filterButtonText}>{t('common.filter')}</Text>
               )}
             </TouchableOpacity>
 
@@ -209,22 +258,22 @@ export default function ActivityLogScreen() {
                 activeOpacity={0.85}
                 onPress={handleClearFilter}
               >
-                <Text style={styles.clearButtonText}>Clear</Text>
+                <Text style={styles.clearButtonText}>{t('common.clear')}</Text>
               </TouchableOpacity>
             ) : null}
           </View>
 
           <Text style={[styles.noticeText, { color: bodyTextColor }]}>
-            Notice anything suspicious?{' '}
+            {t('activity.notice')}{' '}
             <Text style={styles.noticeLink} onPress={() => router.push('/change-password')}>
-              Change your password
+              {t('activity.changePassword')}
             </Text>
           </Text>
 
           <View style={styles.tableHeader}>
-            <Text style={[styles.tableHeaderText, { color: bodyTextColor }]}>Date</Text>
+            <Text style={[styles.tableHeaderText, { color: bodyTextColor }]}>{t('activity.date')}</Text>
             <Text style={[styles.tableHeaderText, styles.tableHeaderRight, { color: bodyTextColor }]}>
-              Activity
+              {t('activity.activity')}
             </Text>
           </View>
           <View style={[styles.divider, { backgroundColor: dividerColor }]} />
@@ -265,7 +314,7 @@ export default function ActivityLogScreen() {
                         }}
                       >
                         <Text style={[styles.activityDate, { color: bodyTextColor }]}>
-                          {formatShortDate(item.created_at)}
+                          {formatActivityPreviewDate(item.created_at)}
                         </Text>
                         <Text style={[styles.activityEvent, { color: bodyTextColor }]} numberOfLines={1}>
                           {item.event}
@@ -280,15 +329,15 @@ export default function ActivityLogScreen() {
                       {isExpanded ? (
                         <View style={styles.activityDetails}>
                           <View style={styles.detailRow}>
-                            <Text style={[styles.detailLabel, { color: bodyTextColor }]}>Device:</Text>
+                            <Text style={[styles.detailLabel, { color: bodyTextColor }]}>{t('activity.device')}</Text>
                             <Text style={[styles.detailValue, { color: bodyTextColor }]}>{item.device || '-'}</Text>
                           </View>
                           <View style={styles.detailRow}>
-                            <Text style={[styles.detailLabel, { color: bodyTextColor }]}>Browser:</Text>
+                            <Text style={[styles.detailLabel, { color: bodyTextColor }]}>{t('activity.browser')}</Text>
                             <Text style={[styles.detailValue, { color: bodyTextColor }]}>{item.browser || '-'}</Text>
                           </View>
                           <View style={styles.detailRow}>
-                            <Text style={[styles.detailLabel, { color: bodyTextColor }]}>IP Address:</Text>
+                            <Text style={[styles.detailLabel, { color: bodyTextColor }]}>{t('activity.ipAddress')}</Text>
                             <Text style={[styles.detailValue, { color: bodyTextColor }]}>{item.ip || '-'}</Text>
                           </View>
                         </View>
@@ -386,12 +435,12 @@ const styles = StyleSheet.create({
   filterRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: 4,
+    gap: 12,
     marginBottom: 14,
   },
   dateFieldWrap: {
     width: 96,
-    height: 28,
+    height: 26,
     borderRadius: 5,
     backgroundColor: Colors.white,
     borderWidth: 1,
@@ -403,12 +452,14 @@ const styles = StyleSheet.create({
   },
   dateFieldLabel: {
     position: 'absolute',
-    top: -10,
-    left: 6,
+    top: -7,
+    left: 8,
+    zIndex: 1,
+    paddingHorizontal: 4,
     color: Colors.white,
     fontSize: 8,
     fontWeight: '500',
-    lineHeight: 10,
+    lineHeight: 9,
   },
   dateFieldInput: {
     color: 'rgba(151, 151, 151, 1)',
@@ -503,14 +554,16 @@ const styles = StyleSheet.create({
   },
   activityDetails: {
     paddingLeft: 12,
+    paddingRight: 12,
     paddingBottom: 10,
   },
   detailRow: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     marginBottom: 6,
   },
   detailLabel: {
-    width: 62,
+    width: 88,
     color: Colors.white,
     fontSize: 12,
   },

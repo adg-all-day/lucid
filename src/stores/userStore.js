@@ -5,6 +5,7 @@ import { create } from 'zustand';
 
 const useUserStore = create((set) => ({
   // all empty by default, gets filled in once we have a real profile endpoint
+  id: null,
   name: '',
   email: '',
   avatar: '',
@@ -19,6 +20,7 @@ const useUserStore = create((set) => ({
       const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
 
       return {
+        id: data?.id ?? null,
         name: data?.name || fullName || '',
         email: data?.email || '',
         avatar: data?.avatar || '',
@@ -30,6 +32,7 @@ const useUserStore = create((set) => ({
   // wipe everything on logout
   clearUser: () =>
     set({
+      id: null,
       name: '',
       email: '',
       avatar: '',
